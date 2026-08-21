@@ -14,6 +14,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Nav gains a shadow once the page is scrolled
+  if (nav) {
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Scroll-triggered reveal, with a per-item stagger inside each grid/row
+  const revealEls = document.querySelectorAll(
+    '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head'
+  );
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (revealEls.length && 'IntersectionObserver' in window && !prefersReducedMotion) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          const siblings = Array.from(el.parentElement.children);
+          const idx = siblings.indexOf(el);
+          el.style.transitionDelay = `${Math.min(idx, 6) * 70}ms`;
+          el.classList.add('in-view');
+          io.unobserve(el);
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+    );
+    revealEls.forEach((el) => io.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add('in-view'));
+  }
+
   // Contact form submission
   const form = document.querySelector('.contact-form');
   if (form) {

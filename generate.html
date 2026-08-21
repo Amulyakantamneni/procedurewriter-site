@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator — ProcedureWriter.ai</title>
+<meta name="description" content="Paste your raw notes and get an AI-drafted procedure document, structured and ready for review.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="pg-generate">
+
+<header class="site-nav">
+  <div class="container nav-row">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>
+      ProcedureWriter<span style="color:var(--teal-400)">.ai</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="services.html">Services</a></li>
+      <li><a href="industries.html">Industries</a></li>
+      <li><a href="how-it-works.html">How It Works</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary">Get Started</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Generator — Preview</p>
+    <h1>Paste your notes, get a structured first draft</h1>
+    <p>This is an early, unauthenticated preview of the drafting engine — not the polished product experience yet. Paste raw notes or a process description below and get back a structured procedure document.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container contact-grid">
+    <div>
+      <div class="field">
+        <label for="gen-title">Procedure Title</label>
+        <input type="text" id="gen-title" placeholder="Client Intake & Data Verification">
+      </div>
+      <div class="field">
+        <label for="gen-source">Source Material</label>
+        <textarea id="gen-source" style="min-height:280px;" placeholder="Paste interview notes, an existing document, or a plain description of how the process works today..."></textarea>
+      </div>
+      <div class="field">
+        <label for="gen-access-code">Access Code (only if the site owner set one)</label>
+        <input type="password" id="gen-access-code" placeholder="Leave blank if not required" autocomplete="off">
+      </div>
+      <button id="gen-submit" class="btn btn-primary btn-block">Generate Draft</button>
+      <p id="gen-status" class="form-status"></p>
+    </div>
+
+    <div>
+      <div class="doc-panel" style="position:sticky; top:100px;">
+        <div class="doc-panel-bar">
+          <span class="doc-dot r"></span><span class="doc-dot y"></span><span class="doc-dot g"></span>
+          <span class="filename" id="gen-filename">draft.md</span>
+        </div>
+        <div class="doc-panel-body">
+          <div id="gen-output" style="white-space:pre-wrap; font-family:'SF Mono', Menlo, monospace; font-size:0.8rem; color:var(--text-300); max-height:520px; overflow-y:auto;">Your generated draft will appear here.</div>
+          <div class="doc-footer" style="margin-top:18px;">
+            <button id="gen-copy" class="btn btn-secondary" style="padding:8px 16px; font-size:0.82rem;" disabled>Copy</button>
+            <button id="gen-download" class="btn btn-secondary" style="padding:8px 16px; font-size:0.82rem;" disabled>Download .md</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="index.html" class="brand">
+          <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>
+          ProcedureWriter<span style="color:var(--teal-400)">.ai</span>
+        </a>
+        <p>AI-assisted procedure writing for teams that need to get it right the first time.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="services.html">SOP Creation</a></li>
+          <li><a href="services.html">Compliance Docs</a></li>
+          <li><a href="services.html">Process Mapping</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="how-it-works.html">How It Works</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <ul>
+          <li><a href="mailto:hello@procedurewriter.ai">hello@procedurewriter.ai</a></li>
+          <li><a href="contact.html">Book a Consultation</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 ProcedureWriter.ai</span>
+      <span>Privacy Policy · Terms of Service</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/generate.js"></script>
+</body>
+</html>

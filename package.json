@@ -1,0 +1,10 @@
+{
+  "name": "procedurewriter-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Serverless backend for ProcedureWriter.ai's AI procedure generator, deployed on Vercel.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0"
+  }
+}

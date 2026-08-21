@@ -5,29 +5,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
-  /* Surfaces */
-  --bg-950: #0a0e1a;
-  --bg-900: #0f1526;
-  --bg-800: #151d33;
-  --bg-700: #1c2640;
-  --bg-600: #2a3552;
+  /* Surfaces — warm charcoal, not blue-black */
+  --bg-950: #0a0a0d;
+  --bg-900: #101013;
+  --bg-800: #17171c;
+  --bg-700: #1f1f26;
+  --bg-600: #2b2b34;
 
   /* Text */
-  --text-000: #ffffff;
-  --text-100: #e6e9f2;
-  --text-300: #b1b9cf;
-  --text-500: #7d87a3;
+  --text-000: #f7f7f8;
+  --text-100: #e2e2e7;
+  --text-300: #a5a6b0;
+  --text-500: #6c6d78;
 
   /* Borders */
-  --border-700: #232e4a;
-  --border-600: #2f3b5c;
+  --border-700: #202024;
+  --border-600: #2c2c33;
 
-  /* Brand accents */
-  --indigo-400: #818cf8;
-  --indigo-500: #6366f1;
-  --indigo-600: #4f46e5;
-  --teal-400: #2dd4bf;
-  --teal-500: #14b8a6;
+  /* Brand accents — single confident blue, muted gold for highlights */
+  --indigo-400: #7c8cf5;
+  --indigo-500: #5b6ef0;
+  --indigo-600: #4750d6;
+  --teal-400: #cba765;
+  --teal-500: #b3904f;
 
   /* Type */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -46,7 +46,9 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background: var(--bg-950);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 28px 28px,
+    var(--bg-950);
   color: var(--text-300);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
@@ -120,12 +122,12 @@ section { padding: 96px 0; }
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--indigo-500), var(--indigo-600));
+  background: var(--indigo-500);
   color: #fff;
-  box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.55);
+  box-shadow: 0 8px 20px -8px rgba(91, 110, 240, 0.5);
 }
 
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(99, 102, 241, 0.7); }
+.btn-primary:hover { background: var(--indigo-600); transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(91, 110, 240, 0.65); }
 
 .btn-secondary {
   background: transparent;
@@ -133,7 +135,7 @@ section { padding: 96px 0; }
   border-color: var(--border-600);
 }
 
-.btn-secondary:hover { border-color: var(--indigo-400); background: rgba(99, 102, 241, 0.08); }
+.btn-secondary:hover { border-color: var(--indigo-400); background: rgba(91, 110, 240, 0.08); }
 
 .btn-block { width: 100%; justify-content: center; }
 
@@ -210,8 +212,8 @@ header.site-nav {
 .hero {
   padding: 168px 0 100px;
   background:
-    radial-gradient(60% 60% at 85% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
-    radial-gradient(50% 50% at 0% 20%, rgba(20, 184, 166, 0.12) 0%, transparent 60%);
+    radial-gradient(55% 55% at 88% 0%, rgba(91, 110, 240, 0.16) 0%, transparent 62%),
+    radial-gradient(40% 40% at 4% 30%, rgba(203, 167, 101, 0.07) 0%, transparent 60%);
 }
 
 .hero-grid {
@@ -320,7 +322,7 @@ header.site-nav {
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(45, 212, 191, 0.12);
+  background: rgba(203, 167, 101, 0.14);
   color: var(--teal-400);
 }
 
@@ -407,8 +409,42 @@ header.site-nav {
   background: var(--bg-900);
   border: 1px solid var(--border-700);
   border-radius: var(--radius-md);
-  padding: 28px;
+  overflow: hidden;
 }
+
+.industry-photo {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  background: var(--bg-800);
+}
+
+.industry-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(45%) contrast(1.05);
+  transition: filter 0.25s ease, transform 0.35s ease;
+}
+
+.industry-card:hover .industry-photo img { filter: grayscale(10%) contrast(1.05); transform: scale(1.04); }
+
+.industry-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 10, 13, 0.15) 0%, rgba(10, 10, 13, 0.85) 100%);
+}
+
+.industry-photo .card-icon {
+  position: absolute;
+  left: 20px;
+  bottom: -22px;
+  z-index: 1;
+  background: var(--bg-900);
+}
+
+.industry-card-body { padding: 40px 24px 24px; }
 
 .industry-card .card-icon { color: var(--indigo-400); }
 
@@ -432,6 +468,44 @@ header.site-nav {
 
 .industry-card li::before { content: '—'; color: var(--border-600); }
 
+/* ---------- Photo band (full-width editorial image + text) ---------- */
+.photo-band {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-700);
+  min-height: 340px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.photo-band img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(55%) contrast(1.05);
+}
+
+.photo-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10, 10, 13, 0.94) 0%, rgba(10, 10, 13, 0.55) 55%, rgba(10, 10, 13, 0.25) 100%);
+  z-index: 1;
+}
+
+.photo-band-content {
+  position: relative;
+  z-index: 2;
+  padding: 44px;
+  max-width: 480px;
+}
+
+.photo-band-content h2 { font-size: clamp(1.4rem, 2.4vw, 1.9rem); margin-bottom: 12px; }
+.photo-band-content p { font-size: 0.95rem; }
+
 /* ---------- Placeholder blocks (honest, marked) ---------- */
 .placeholder-block {
   background: var(--bg-800);
@@ -446,7 +520,7 @@ header.site-nav {
 
 /* ---------- CTA band ---------- */
 .cta-band {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(20, 184, 166, 0.1));
+  background: linear-gradient(135deg, rgba(91, 110, 240, 0.12), rgba(203, 167, 101, 0.06));
   border: 1px solid var(--border-700);
   border-radius: var(--radius-lg);
   padding: 56px;
@@ -461,7 +535,7 @@ header.site-nav {
 .page-hero {
   padding: 156px 0 64px;
   border-bottom: 1px solid var(--border-700);
-  background: radial-gradient(60% 60% at 85% 0%, rgba(99, 102, 241, 0.14) 0%, transparent 60%);
+  background: radial-gradient(55% 55% at 88% 0%, rgba(91, 110, 240, 0.14) 0%, transparent 62%);
 }
 
 .page-hero h1 { font-size: clamp(2rem, 3.6vw, 2.75rem); max-width: 720px; margin-bottom: 18px; }

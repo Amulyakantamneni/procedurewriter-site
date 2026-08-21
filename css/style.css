@@ -348,8 +348,9 @@ header.site-nav {
 .card:hover { transform: translateY(-3px); border-color: var(--border-600); }
 
 .card-photo {
-  height: 150px;
+  height: 200px;
   margin: -30px -30px 22px;
+  background: var(--bg-800);
 }
 
 .card-photo img {
@@ -434,7 +435,7 @@ header.site-nav {
 
 .industry-photo {
   position: relative;
-  height: 160px;
+  height: 200px;
   overflow: hidden;
   background: var(--bg-800);
 }

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Scroll-triggered reveal, with a per-item stagger inside each grid/row
   const revealEls = document.querySelectorAll(
-    '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head, .pull-quote'
+    '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head, .pull-quote, .mosaic-item, .contact-grid > div:first-child, .contact-form, .contact-photo'
   );
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -87,6 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
       docPanel.style.transform = '';
     });
   }
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  });
 
   // Contact form submission
   const form = document.querySelector('.contact-form');

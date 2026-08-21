@@ -532,19 +532,18 @@ header.site-nav {
 /* ---------- Image mosaic ---------- */
 .image-mosaic {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 130px;
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
 }
 
 .mosaic-item {
   position: relative;
+  aspect-ratio: 3 / 4;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border-700);
+  background: var(--bg-800);
 }
-
-.mosaic-item.big { grid-column: span 2; grid-row: span 2; }
 
 .mosaic-item img {
   width: 100%;
@@ -554,7 +553,23 @@ header.site-nav {
   transition: filter 0.3s ease, transform 0.4s ease;
 }
 
-.mosaic-item:hover img { filter: grayscale(5%) contrast(1.05); transform: scale(1.06); }
+.mosaic-item:hover img { filter: grayscale(5%) contrast(1.05); transform: scale(1.08); }
+
+.mosaic-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 14px 12px 12px;
+  background: linear-gradient(0deg, rgba(10, 10, 13, 0.92) 0%, transparent 100%);
+  color: var(--text-000);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: -0.01em;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.mosaic-item:hover .mosaic-caption { transform: translateY(0); }
 
 /* ---------- Marquee ticker ---------- */
 .marquee {
@@ -849,8 +864,7 @@ footer.site-footer {
   .card-grid, .steps-grid, .industry-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .value-grid { grid-template-columns: 1fr; }
-  .image-mosaic { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; }
-  .mosaic-item.big { grid-column: span 2; grid-row: span 1; }
+  .image-mosaic { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 700px) {
@@ -860,6 +874,7 @@ footer.site-footer {
   .nav-links, .nav-cta .btn { display: none; }
   .nav-toggle { display: flex; }
   .card-grid, .steps-grid, .industry-grid, .footer-grid, .form-row { grid-template-columns: 1fr; }
+  .image-mosaic { grid-template-columns: repeat(2, 1fr); }
   .cta-band { padding: 36px 24px; }
   .footer-bottom { flex-direction: column; align-items: flex-start; }
 
@@ -977,13 +992,22 @@ header.site-nav.scrolled {
   /* ---------- Per-page signature animations ---------- */
 
   /* Home: cards and mosaic tiles pop in with a scale */
-  .pg-home .card,
-  .pg-home .mosaic-item {
+  .pg-home .card {
     transform: translateY(20px) scale(0.93);
   }
-  .pg-home .card.in-view,
-  .pg-home .mosaic-item.in-view {
+  .pg-home .card.in-view {
     transform: translateY(0) scale(1);
+  }
+
+  /* Home: mosaic tiles pull into focus from a soft blur, not a slide */
+  .pg-home .mosaic-item {
+    transform: scale(1.1);
+    filter: blur(10px);
+    transition: opacity 0.7s ease, transform 0.7s ease, filter 0.7s ease;
+  }
+  .pg-home .mosaic-item.in-view {
+    transform: scale(1);
+    filter: blur(0);
   }
 
   /* Services: rows alternate in from left and right, editorial-style */

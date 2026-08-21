@@ -532,7 +532,7 @@ header.site-nav {
 /* ---------- Image mosaic ---------- */
 .image-mosaic {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
@@ -550,10 +550,37 @@ header.site-nav {
   height: 100%;
   object-fit: cover;
   filter: grayscale(50%) contrast(1.05);
-  transition: filter 0.3s ease, transform 0.4s ease;
+  transition: filter 0.3s ease;
 }
 
-.mosaic-item:hover img { filter: grayscale(5%) contrast(1.05); transform: scale(1.08); }
+.mosaic-item:hover img { filter: grayscale(5%) contrast(1.05); }
+
+.mosaic-live {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  background: rgba(10, 10, 13, 0.55);
+  backdrop-filter: blur(4px);
+  color: var(--text-000);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.mosaic-live .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+}
 
 .mosaic-caption {
   position: absolute;
@@ -1009,6 +1036,28 @@ header.site-nav.scrolled {
     transform: scale(1);
     filter: blur(0);
   }
+
+  /* Mosaic tiles keep a slow, looping Ken Burns drift once revealed — footage, not photos */
+  @keyframes ken-burns {
+    0% { transform: scale(1) translate(0, 0); }
+    50% { transform: scale(1.15) translate(-2%, -1.5%); }
+    100% { transform: scale(1) translate(0, 0); }
+  }
+
+  .pg-home .mosaic-item.in-view img {
+    animation: ken-burns 12s ease-in-out infinite;
+  }
+
+  .pg-home .mosaic-item:nth-child(2).in-view img { animation-delay: -3s; }
+  .pg-home .mosaic-item:nth-child(3).in-view img { animation-delay: -6s; }
+  .pg-home .mosaic-item:nth-child(4).in-view img { animation-delay: -9s; }
+
+  @keyframes rec-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .mosaic-live .dot { animation: rec-pulse 1.6s ease-in-out infinite; }
 
   /* Services: rows alternate in from left and right, editorial-style */
   .pg-services .service-row {

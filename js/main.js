@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Scroll-triggered reveal, with a per-item stagger inside each grid/row
   const revealEls = document.querySelectorAll(
-    '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head'
+    '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head, .pull-quote'
   );
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -45,6 +45,47 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach((el) => io.observe(el));
   } else {
     revealEls.forEach((el) => el.classList.add('in-view'));
+  }
+
+  // Parallax drift on full-width photo bands
+  const parallaxImgs = document.querySelectorAll('.photo-band img');
+  if (parallaxImgs.length && !prefersReducedMotion) {
+    let ticking = false;
+    const updateParallax = () => {
+      const vh = window.innerHeight;
+      parallaxImgs.forEach((img) => {
+        const rect = img.parentElement.getBoundingClientRect();
+        const progress = (rect.top + rect.height / 2 - vh / 2) / vh;
+        img.style.transform = `translateY(${progress * 36}px)`;
+      });
+      ticking = false;
+    };
+    updateParallax();
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          requestAnimationFrame(updateParallax);
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
+  }
+
+  // Cursor tilt on the hero doc panel (desktop, fine pointer, motion allowed)
+  const docPanel = document.querySelector('.doc-panel');
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (docPanel && canHover && !prefersReducedMotion) {
+    docPanel.addEventListener('mousemove', (e) => {
+      const rect = docPanel.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      docPanel.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg)`;
+    });
+    docPanel.addEventListener('mouseleave', () => {
+      docPanel.style.transform = '';
+    });
   }
 
   // Contact form submission

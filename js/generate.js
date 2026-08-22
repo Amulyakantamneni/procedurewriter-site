@@ -13,13 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!form.submit) return;
 
-  // On GitHub Pages the API lives on a separate Vercel deployment (GH Pages
-  // can't run server code). If this page is ever served from that same
-  // Vercel project instead, calls stay same-origin automatically.
-  const VERCEL_API_BASE = 'https://YOUR-VERCEL-PROJECT.vercel.app';
-  const API_BASE = window.location.origin.includes('vercel.app') || window.location.hostname === 'procedurewriter.ai'
-    ? ''
-    : VERCEL_API_BASE;
+  // procedurewriter.ai and the github.io URL are both served by GitHub
+  // Pages, which can't run server code — the API only exists on Vercel.
+  // Only skip the absolute URL when this page is itself being viewed via
+  // the Vercel deployment (same-origin call).
+  const VERCEL_API_BASE = 'https://procedurewriter-site.vercel.app';
+  const API_BASE = window.location.origin.includes('vercel.app') ? '' : VERCEL_API_BASE;
 
   let lastDraft = '';
 

@@ -167,6 +167,8 @@ header.site-nav {
   color: var(--text-000);
 }
 
+.brand-text { white-space: nowrap; }
+
 .brand-mark {
   width: 34px;
   height: 34px;

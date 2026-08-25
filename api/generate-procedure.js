@@ -30,7 +30,8 @@ The generate_procedure tool's schema is the master structure for every generated
 If a mode is provided, shift emphasis without dropping other sections:
 - "sop": prioritize procedure structure, step-by-step activities, responsibilities, process flow, records, controls.
 - "compliance": prioritize country/region-specific regulations, standards, controls, evidence, records, audit readiness.
-- "process-mapping": prioritize process flow, activities, decision points, inputs, outputs, roles, interfaces.`;
+- "process-mapping": prioritize process flow, activities, decision points, inputs, outputs, roles, interfaces.
+- Any other mode value (e.g. "ai-governance", "documentation-audit", "rollout-training"): infer reasonable emphasis from the mode name itself and the brief.`;
 
 const TOOL_SCHEMA = {
   name: 'generate_procedure',

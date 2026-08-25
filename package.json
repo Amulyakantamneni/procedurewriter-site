@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Serverless backend for ProcedureWriter.ai's AI procedure generator, deployed on Vercel.",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.120.0"
+    "@anthropic-ai/sdk": "^0.120.0",
+    "docx": "^9.7.1"
   }
 }

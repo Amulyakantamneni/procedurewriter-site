@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generator | ProcedureWriter.ai</title>
-<meta name="description" content="Paste your raw notes and get an AI-drafted procedure document, structured and ready for review.">
+<meta name="description" content="Answer a few questions and get a complete, structured procedure document drafted by AI and ready for review.">
 <link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
 <body class="pg-generate">
 
@@ -29,48 +30,147 @@
   </div>
 </header>
 
-<section class="page-hero">
+<section class="page-hero gen-hero">
   <div class="container">
     <p class="eyebrow">Generator Preview</p>
-    <h1>Paste your notes, get a structured first draft</h1>
-    <p>This is an early, unauthenticated preview of the drafting engine, not the polished product experience yet. Paste raw notes or a process description below and get back a structured procedure document.</p>
+    <h1 id="gen-heading">What would you like to create?</h1>
+    <p>Answer a few questions like you're briefing a consultant. This is an early, unauthenticated preview of the drafting engine, not the final polished product.</p>
   </div>
 </section>
 
-<section>
-  <div class="container contact-grid">
-    <div>
-      <div class="field">
-        <label for="gen-title">Procedure Title</label>
-        <input type="text" id="gen-title" placeholder="Client Intake & Data Verification">
-      </div>
-      <div class="field">
-        <label for="gen-source">Source Material</label>
-        <textarea id="gen-source" style="min-height:280px;" placeholder="Paste interview notes, an existing document, or a plain description of how the process works today..."></textarea>
-      </div>
-      <div class="field">
-        <label for="gen-access-code">Access Code (only if the site owner set one)</label>
-        <input type="password" id="gen-access-code" placeholder="Leave blank if not required" autocomplete="off">
-      </div>
-      <button id="gen-submit" class="btn btn-primary btn-block">Generate Draft</button>
-      <p id="gen-status" class="form-status"></p>
+<section class="gen-app">
+  <div class="container">
+
+    <!-- Progress -->
+    <div class="wizard-progress" id="wizard-progress">
+      <span class="wp-step active" data-phase="industry">Industry</span>
+      <span class="wp-step" data-phase="details">Details</span>
+      <span class="wp-step" data-phase="generate">Generate</span>
+      <span class="wp-step" data-phase="review">Review</span>
+      <span class="wp-step" data-phase="download">Download</span>
     </div>
 
-    <div>
-      <div class="doc-panel" style="position:sticky; top:100px;">
-        <div class="doc-panel-bar">
-          <span class="doc-dot r"></span><span class="doc-dot y"></span><span class="doc-dot g"></span>
-          <span class="filename" id="gen-filename">draft.md</span>
-        </div>
-        <div class="doc-panel-body">
-          <div id="gen-output" style="white-space:pre-wrap; font-family:'SF Mono', Menlo, monospace; font-size:0.8rem; color:var(--text-300); max-height:520px; overflow-y:auto;">Your generated draft will appear here.</div>
-          <div class="doc-footer" style="margin-top:18px;">
-            <button id="gen-copy" class="btn btn-secondary" style="padding:8px 16px; font-size:0.82rem;" disabled>Copy</button>
-            <button id="gen-download" class="btn btn-secondary" style="padding:8px 16px; font-size:0.82rem;" disabled>Download .md</button>
-          </div>
-        </div>
+    <!-- Resume banner -->
+    <div class="resume-banner" id="resume-banner" hidden>
+      <span>You have a saved draft in progress.</span>
+      <div class="resume-actions">
+        <button class="btn btn-secondary" id="resume-discard" type="button">Start Fresh</button>
+        <button class="btn btn-primary" id="resume-continue" type="button">Continue Your Procedure</button>
       </div>
     </div>
+
+    <!-- WIZARD -->
+    <div class="wizard" id="wizard">
+
+      <div class="context-chip" id="context-chip" hidden>
+        <span id="context-chip-text"></span>
+        <button type="button" id="context-chip-change">Change</button>
+      </div>
+
+      <!-- Step: industry (only shown if not pre-filled) -->
+      <div class="wizard-step" data-step="industry">
+        <h2>Which industry is this for?</h2>
+        <p class="wizard-hint">This shapes the regulations and language the draft considers.</p>
+        <select id="w-industry" class="w-input">
+          <option value="">Select an industry (optional)</option>
+          <option>Healthcare & Medical</option>
+          <option>Manufacturing</option>
+          <option>Information Technology / Software</option>
+          <option>Finance & Banking</option>
+          <option>Insurance</option>
+          <option>Pharmaceutical & Life Sciences</option>
+          <option>Construction</option>
+          <option>Automotive</option>
+          <option>Food & Beverage</option>
+          <option>Logistics & Supply Chain</option>
+          <option>Retail & E-commerce</option>
+          <option>Energy & Utilities</option>
+          <option>Government & Public Sector</option>
+          <option>Education</option>
+          <option>Professional Services</option>
+          <option>Legal & Compliance</option>
+        </select>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="wizard-step" data-step="q1" hidden>
+        <h2>What procedure do you want to create?</h2>
+        <p class="wizard-hint">A short title is enough, e.g. "Patient Complaint Handling" or "Vendor Onboarding."</p>
+        <input type="text" id="w-title" class="w-input" placeholder="e.g. Client Intake and ID Verification">
+      </div>
+
+      <!-- Step 2 -->
+      <div class="wizard-step" data-step="q2" hidden>
+        <h2>What is the goal of this procedure, and what should it cover?</h2>
+        <p class="wizard-hint">Purpose, start and end points, and anything explicitly out of scope.</p>
+        <textarea id="w-goal" class="w-input w-textarea" placeholder="e.g. Make sure every new client is verified consistently before we open an account. Starts when a client submits an application, ends when the account is approved or declined."></textarea>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="wizard-step" data-step="q3" hidden>
+        <h2>Who is this procedure for, and who will use or be affected by it?</h2>
+        <p class="wizard-hint">Teams, roles, departments, or customers involved. Optional, but it sharpens the responsibilities section.</p>
+        <textarea id="w-audience" class="w-input w-textarea" placeholder="e.g. Front desk staff, operations manager, compliance officer, and the client"></textarea>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="wizard-step" data-step="q4" hidden>
+        <h2>Which country or region will this procedure be used in?</h2>
+        <p class="wizard-hint">Determines which regulations are relevant. Optional, but recommended.</p>
+        <input type="text" id="w-region" class="w-input" placeholder="e.g. United States, European Union, Australia">
+      </div>
+
+      <!-- Step 5 -->
+      <div class="wizard-step" data-step="q5" hidden>
+        <h2>What do you currently do, or what requirements should this procedure follow?</h2>
+        <p class="wizard-hint">Plain English is fine. The more specific, the better the draft.</p>
+        <textarea id="w-current" class="w-input w-textarea" placeholder="Describe today's process step by step, or the requirements it needs to satisfy..."></textarea>
+        <button type="button" class="btn btn-secondary w-noprocess" id="w-noprocess-btn">We don't have an existing process</button>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="wizard-step" data-step="q6" hidden>
+        <h2>Is there anything else the procedure must include?</h2>
+        <p class="wizard-hint">Systems, tools, approvals, KPIs, forms, risks. Optional.</p>
+        <textarea id="w-extra" class="w-input w-textarea" placeholder="e.g. Must reference our CRM tool, needs manager sign-off over $5,000..."></textarea>
+      </div>
+
+      <div class="wizard-nav">
+        <button type="button" class="btn btn-secondary" id="w-back">Back</button>
+        <button type="button" class="btn btn-primary" id="w-next">Next</button>
+        <button type="button" class="btn btn-primary" id="w-generate" hidden>Generate Procedure</button>
+      </div>
+
+      <details class="access-toggle" id="access-toggle">
+        <summary>Have an access code?</summary>
+        <input type="password" id="w-access" class="w-input" placeholder="Leave blank if not required" autocomplete="off">
+      </details>
+
+      <p class="form-status" id="w-status"></p>
+    </div>
+
+    <!-- GENERATING -->
+    <div class="generating" id="generating" hidden>
+      <div class="generating-spinner"></div>
+      <p id="generating-message">Understanding your process&hellip;</p>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="doc-workspace" id="doc-workspace" hidden>
+      <aside class="doc-sidebar" id="doc-sidebar"></aside>
+      <div class="doc-main">
+        <div class="doc-toolbar">
+          <button type="button" class="btn btn-secondary" id="doc-restart">Start Over</button>
+          <div class="doc-toolbar-actions">
+            <button type="button" class="btn btn-secondary" id="doc-copy">Copy as Text</button>
+            <button type="button" class="btn btn-secondary" id="doc-pdf">Download PDF</button>
+            <button type="button" class="btn btn-primary" id="doc-docx">Download DOCX</button>
+          </div>
+        </div>
+        <div id="doc-content" class="doc-content"></div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -83,6 +183,7 @@
           <span class="brand-text">ProcedureWriter<span style="color:var(--teal-400)">.ai</span></span>
         </a>
         <p>AI-assisted procedure writing for teams that need to get it right the first time.</p>
+        <a href="generate.html" class="btn btn-primary footer-cta">Create a Procedure <span class="arrow">→</span></a>
       </div>
       <div class="footer-col">
         <h4>Services</h4>

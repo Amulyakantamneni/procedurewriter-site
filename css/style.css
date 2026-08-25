@@ -500,7 +500,7 @@ header.site-nav {
   gap: 8px;
 }
 
-.industry-card li::before { content: '—'; color: var(--border-600); }
+.industry-card li::before { content: '•'; color: var(--border-600); }
 
 /* ---------- Photo band (full-width editorial image + text) ---------- */
 .photo-band {
@@ -1471,6 +1471,79 @@ header.site-nav.scrolled {
 .doc-quality-recs { grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-500); }
 .doc-quality-recs ul { margin: 8px 0 0 20px; }
 
+/* ---------- Chart bar (single-hue magnitude) ---------- */
+.chart-bars {
+  background: var(--bg-800);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+  margin: 16px 0 24px;
+}
+
+.chart-bar-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 56px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.chart-bar-row:last-child { margin-bottom: 0; }
+
+.chart-bar-label {
+  font-size: 0.82rem;
+  color: var(--text-300);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-bar-track { height: 16px; background: var(--bg-700); border-radius: 4px; overflow: hidden; }
+
+.chart-bar-fill {
+  height: 100%;
+  max-width: 100%;
+  background: var(--indigo-500);
+  border-radius: 4px;
+}
+
+.chart-bar-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-100);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Stat tile row ---------- */
+.stat-tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.stat-tile {
+  background: var(--bg-800);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  text-align: center;
+}
+
+.stat-tile .stat-value {
+  font-family: var(--font-head);
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--text-000);
+}
+
+.stat-tile .stat-label {
+  font-size: 0.76rem;
+  color: var(--text-500);
+  margin-top: 4px;
+}
+
 /* ---------- Print ---------- */
 .checklist-print { display: none; }
 
@@ -1499,6 +1572,11 @@ header.site-nav.scrolled {
   .doc-section h2, .doc-section h3, .doc-section p, .doc-section li,
   .doc-table th, .doc-table td { color: #000 !important; }
   .doc-callout { color: #000; background: #f3f3f3; }
+
+  .chart-bars, .stat-tile, .chart-bar-track { background: #f3f3f3; border-color: #ccc; }
+  .chart-bar-label, .chart-bar-value, .stat-label { color: #000 !important; }
+  .stat-value { color: #000; }
+  .chart-bar-fill { background: #4750d6; }
 
   /* Checklist mode: hide everything except the checklist container */
   body.checklist-mode > *:not(#checklist-print) { display: none !important; }

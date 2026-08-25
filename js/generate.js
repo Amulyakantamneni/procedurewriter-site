@@ -471,6 +471,51 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
   }
 
+  // Headline counts as a stat-tile row (the correct form for "a handful of
+  // headline numbers" per the dataviz guidance, not a categorical chart).
+  function renderRequirementCounts(req) {
+    if (!req) return '';
+    const cats = [
+      ['Regulatory', req.regulatory], ['Governance', req.governance],
+      ['Business', req.business], ['Compliance', req.compliance],
+    ];
+    if (!cats.some(([, items]) => items?.length)) return '';
+    return `
+      <div class="stat-tile-row">
+        ${cats.map(([label, items]) => `
+          <div class="stat-tile">
+            <div class="stat-value">${(items || []).length}</div>
+            <div class="stat-label">${esc(label)}</div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  // Single-hue magnitude bar chart for percentage-based KPI targets. Skipped
+  // when fewer than two targets are actually percentages — not enough for a
+  // meaningful comparison, the table alone carries it.
+  function renderKpiChart(kpis) {
+    const withPct = (kpis || [])
+      .map((k) => {
+        const m = String(k.target || '').match(/(\d+(?:\.\d+)?)\s*%/);
+        return m ? { label: k.indicator, value: Math.min(100, parseFloat(m[1])) } : null;
+      })
+      .filter(Boolean);
+
+    if (withPct.length < 2) return '';
+
+    return `
+      <div class="chart-bars">
+        ${withPct.map((k) => `
+          <div class="chart-bar-row">
+            <div class="chart-bar-label">${esc(k.label)}</div>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${k.value}%"></div></div>
+            <div class="chart-bar-value">${k.value}%</div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
   function renderDocument(p) {
     const sections = [
       { id: 'purpose', label: '1.0 Purpose' },
@@ -549,6 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="doc-section" id="requirements">
         <h2>4.0 Requirements</h2>
+        ${renderRequirementCounts(p.requirements)}
         ${reqRows('Regulatory', p.requirements?.regulatory)}
         ${reqRows('Governance', p.requirements?.governance)}
         ${reqRows('Business', p.requirements?.business)}
@@ -578,6 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="doc-section" id="kpis">
         <h2>8.0 Performance Indicators</h2>
+        ${renderKpiChart(p.kpis)}
         ${table(['Indicator', 'Description', 'Role', 'Target'], (p.kpis || []).map((k) => [k.indicator, k.description, k.role, k.target]))}
       </div>
 

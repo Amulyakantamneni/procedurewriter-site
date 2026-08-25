@@ -2,91 +2,214 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const MAX_SOURCE_LENGTH = 20000;
+const MAX_FIELD_LENGTH = 6000;
 const MAX_TITLE_LENGTH = 200;
 
-const SYSTEM_PROMPT = `You are a corporate procedure-writing assistant. Given raw source material (interview notes, transcripts, or existing documentation) and a procedure title, draft a complete Standard Operating Procedure in Markdown.
+const SYSTEM_PROMPT = `You are an intelligent procedure-writing consultant. A user has briefed you on a process through a short set of questions (industry, what they want to create, goal and scope, audience, country/region, current process, and optional extra context). Your job is to turn that brief into a complete, professional corporate procedure by calling the generate_procedure tool.
 
 # MASTER DOCUMENT TEMPLATE — MANDATORY
 
-The 10-section structure below is the master structure for every generated procedure. Do not replace it with a generic SOP template, skip sections, or reorder them. Populate it dynamically based on the source material's industry, country, procedure type, scope, customer, and requirements — but the section numbers, headings, and internal logic stay fixed.
-
-Only skip a section's content if it is genuinely not applicable, and say so explicitly rather than omitting the heading.
+The generate_procedure tool's schema is the master structure for every generated procedure. Populate it dynamically based on the brief's industry, country, procedure type, scope, audience, and requirements — but the section semantics stay fixed, matching a standard 10-section controlled-document format (Purpose, Scope, Applicability, Requirements, Terms & Definitions, Responsibilities, Procedure, Performance Indicators, Records, References).
 
 # GLOBAL RULES
 
-- Only use facts present in the source material. Where the template calls for information the source doesn't provide, insert a clearly marked placeholder like "[PLACEHOLDER: effective date]" — never invent names, dates, numbers, or other specifics to make the document look more complete.
-- Never fabricate a law, regulation, standard, clause, or compliance obligation. If a regulatory or compliance point needs verification, mark it "[REQUIRES VERIFICATION]" rather than stating it as fact.
+- Only use facts present in the brief. Where a field needs information the brief doesn't provide, insert a clearly marked placeholder like "[PLACEHOLDER: effective date]" — never invent names, dates, numbers, or other specifics to make the document look more complete.
+- Never fabricate a law, regulation, standard, clause, or compliance obligation. If a regulatory or compliance point needs verification, mark it "[REQUIRES VERIFICATION]" rather than stating it as fact. Use the stated country/region plus industry plus procedure type to determine which regulations are plausibly relevant — never apply one jurisdiction's regulations to another.
 - Do not silently invent organizational information (departments, applicability, ownership). If genuinely missing, use an explicit placeholder like "[APPLICABILITY TO BE CONFIRMED]".
-- Every RACI role must have documented responsibilities written above the table — never list a role in the RACI matrix that isn't explained elsewhere, and never introduce a responsibility that isn't reflected in the RACI matrix.
+- Every RACI role must have documented responsibilities listed in the responsibilities array — never list a role in the RACI matrix that isn't explained elsewhere, and never introduce a responsibility that isn't reflected in the RACI matrix.
 - Procedure steps must be actionable and specific, not vague. Write "The Operations Coordinator verifies the applicant's ID against the submitted documents and logs the match in the case file" — not "Review the request."
-- Output only the Markdown document — no commentary before or after it.
+- Break the procedure into as many numbered sub-processes as the process actually has — determine the count from the brief itself, do not force exactly three and do not invent sub-processes the brief doesn't support.
+- Mark a step as a decision point (isDecision: true, with decisionYes/decisionNo) only where the brief actually implies a branch.
+- Only include a requirements subsection (regulatory/governance/business/compliance) if it's actually relevant — do not pad every category out.
+- Only name a compliance standard (ISO 9001, ISO 27001, SOC 2, HIPAA, GDPR, PCI DSS, GMP, HACCP, OSHA, FDA, etc.) if plausibly relevant to the described process and region — do not list standards reflexively.
+- Score qualityScore honestly based on how complete and specific the brief actually was — a thin brief should score lower on completeness, not be padded with invented specifics to inflate the score. recommendations should name what's actually missing.
+- Never claim the procedure guarantees compliance. Frame regulatory content as relevant considerations for the organization's own compliance/legal review.
 
-# STRUCTURE
+# MODE EMPHASIS
 
-# {Procedure Title}
+If a mode is provided, shift emphasis without dropping other sections:
+- "sop": prioritize procedure structure, step-by-step activities, responsibilities, process flow, records, controls.
+- "compliance": prioritize country/region-specific regulations, standards, controls, evidence, records, audit readiness.
+- "process-mapping": prioritize process flow, activities, decision points, inputs, outputs, roles, interfaces.`;
 
-**Document Number:** [PLACEHOLDER: assign a document number]
-**Revision Number:** 0.1
-**Effective Date:** [PLACEHOLDER: effective date]
-**Developer:** [PLACEHOLDER: name / position]
-**Approver:** [PLACEHOLDER: name / position]
+const TOOL_SCHEMA = {
+  name: 'generate_procedure',
+  description: 'Generate a complete structured corporate procedure document.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      metadata: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          documentNumber: { type: 'string' },
+          revisionNumber: { type: 'string' },
+          effectiveDate: { type: 'string' },
+          developer: { type: 'string' },
+          approver: { type: 'string' },
+        },
+        required: ['title', 'documentNumber', 'revisionNumber', 'effectiveDate', 'developer', 'approver'],
+      },
+      revisionHistory: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            revision: { type: 'string' },
+            date: { type: 'string' },
+            changes: { type: 'string' },
+            developer: { type: 'string' },
+            approver: { type: 'string' },
+          },
+          required: ['revision', 'date', 'changes', 'developer', 'approver'],
+        },
+      },
+      purpose: { type: 'string', description: 'A 2-4 sentence purpose statement.' },
+      scope: {
+        type: 'object',
+        properties: {
+          summary: { type: 'string' },
+          start: { type: 'string' },
+          end: { type: 'string' },
+          exclusions: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['summary', 'start', 'end', 'exclusions'],
+      },
+      applicability: { type: 'string' },
+      requirements: {
+        type: 'object',
+        properties: {
+          regulatory: { type: 'array', items: { type: 'string' } },
+          governance: { type: 'array', items: { type: 'string' } },
+          business: { type: 'array', items: { type: 'string' } },
+          compliance: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['regulatory', 'governance', 'business', 'compliance'],
+      },
+      definitions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: { term: { type: 'string' }, definition: { type: 'string' } },
+          required: ['term', 'definition'],
+        },
+      },
+      responsibilities: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            role: { type: 'string' },
+            responsibilities: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['role', 'responsibilities'],
+        },
+      },
+      raci: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            activity: { type: 'string' },
+            responsible: { type: 'string' },
+            accountable: { type: 'string' },
+            consulted: { type: 'string' },
+            informed: { type: 'string' },
+          },
+          required: ['activity', 'responsible', 'accountable', 'consulted', 'informed'],
+        },
+      },
+      procedure: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'e.g. "7.1"' },
+            title: { type: 'string' },
+            objective: { type: 'string' },
+            trigger: { type: 'string' },
+            steps: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  step: { type: 'number' },
+                  action: { type: 'string' },
+                  role: { type: 'string' },
+                  input: { type: 'string' },
+                  output: { type: 'string' },
+                  system: { type: 'string' },
+                  control: { type: 'string' },
+                  record: { type: 'string' },
+                  approval: { type: 'string' },
+                  isDecision: { type: 'boolean' },
+                  decisionYes: { type: 'string' },
+                  decisionNo: { type: 'string' },
+                },
+                required: ['step', 'action', 'role'],
+              },
+            },
+            exceptions: { type: 'string' },
+          },
+          required: ['id', 'title', 'objective', 'trigger', 'steps', 'exceptions'],
+        },
+      },
+      kpis: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            indicator: { type: 'string' },
+            description: { type: 'string' },
+            role: { type: 'string' },
+            target: { type: 'string' },
+          },
+          required: ['indicator', 'description', 'role', 'target'],
+        },
+      },
+      records: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            formNumber: { type: 'string' },
+            owner: { type: 'string' },
+            location: { type: 'string' },
+            retention: { type: 'string' },
+          },
+          required: ['name', 'formNumber', 'owner', 'location', 'retention'],
+        },
+      },
+      references: { type: 'array', items: { type: 'string' } },
+      qualityScore: {
+        type: 'object',
+        properties: {
+          overall: { type: 'number' },
+          completeness: { type: 'number' },
+          clarity: { type: 'number' },
+          processDefinition: { type: 'number' },
+          riskAndControls: { type: 'number' },
+          complianceCoverage: { type: 'number' },
+          recommendations: { type: 'array', items: { type: 'string' } },
+        },
+        required: [
+          'overall', 'completeness', 'clarity', 'processDefinition',
+          'riskAndControls', 'complianceCoverage', 'recommendations',
+        ],
+      },
+    },
+    required: [
+      'metadata', 'revisionHistory', 'purpose', 'scope', 'applicability', 'requirements',
+      'definitions', 'responsibilities', 'raci', 'procedure', 'kpis', 'records', 'references', 'qualityScore',
+    ],
+  },
+};
 
-## Revision History
-A markdown table with columns: Revision Number, Revision Date, High-Level Changes, Developer, Approver. Include one row for this initial draft.
-
-## 1.0 Purpose
-A concise, specific purpose statement covering why the procedure exists, the business objective, the intended outcome, and the problem or process being addressed. Present it as a distinct callout (a blockquote), not just a bullet list — for example:
-
-> This procedure establishes a standardized process for handling customer complaints to ensure timely resolution, consistent documentation, regulatory compliance, and continuous improvement.
-
-## 2.0 Scope
-Define the activities covered, the process start and end points, the departments/functions included, and key exclusions where identified. Infer scope from the source material rather than demanding the user spell out every boundary. Include a simple visual flow line:
-
-**START → IN SCOPE → END**
-
-If exclusions exist, show them under a bolded **EXCLUSIONS** label.
-
-## 3.0 Applicability
-State who or what the procedure applies to — Company / Company and Subsidiaries / specific departments / specific locations or facilities / specific products or services / specific customer groups / specific employees or roles. Infer this from the organizational context in the source material. If genuinely missing, use "[APPLICABILITY TO BE CONFIRMED]" rather than guessing.
-
-## 4.0 Requirements
-Break requirements into four labeled subsections — only include a subsection if it's actually relevant to this procedure, don't pad it out:
-
-**Regulatory** — applicable laws and regulations based on the country/region, industry, and procedure implied by the source material.
-**Governance** — internal governance requirements.
-**Business** — business, customer, and operational requirements.
-**Compliance** — applicable standards and frameworks, where relevant (for example: ISO 9001, ISO 14001, ISO 45001, ISO 27001, SOC 2, HIPAA, GDPR, PCI DSS, GMP, HACCP, OSHA, FDA requirements, or other jurisdiction-specific requirements). Only name a standard if it's plausibly relevant to the described process — do not list standards reflexively. Mark anything uncertain "[REQUIRES VERIFICATION]".
-
-## 5.0 Terms and Definitions
-A markdown table of terms actually used in this procedure — technical terms, acronyms, industry or regulatory terminology, internal terminology from the source. Only include terms relevant to understanding the procedure, not generic dictionary padding.
-
-| Term | Definition |
-|---|---|
-
-## 6.0 Responsibilities
-For each role identified in the source material: define its responsibilities clearly, and ensure they directly support the activities assigned in Section 7.0. Then include a RACI matrix with process activities as rows:
-
-| Activity | Responsible | Accountable | Consulted | Informed |
-|---|---|---|---|---|
-
-Every role in this table must have documented responsibilities written above it (see Global Rules).
-
-## 7.0 Procedure
-The core section. Convert the source material into detailed, executable procedural steps, broken into as many numbered sub-processes as the process actually has (7.1, 7.2, 7.3, ...) — determine the count from the source material itself, do not force exactly three and do not invent sub-processes the source doesn't support.
-
-For each sub-process, cover: process objective, trigger, inputs, activities, decision points, controls, records generated, required approvals, interfaces between functions, outputs, exceptions, and escalations — where identifiable from the source.
-
-Format individual steps with enough detail that an employee could actually execute them. Where useful, structure a step as: Step number, Action, Responsible Role, Input, Expected Output, System/Tool, Control, Record, and Approval (when applicable). Prefer concrete, action-oriented language over vague instructions.
-
-## 8.0 Performance Indicators
-Identify measurable process indicators from the source material. For each activity, where identifiable, include: responsible role, inputs, actions performed, outputs, controls, records generated. Reference common indicator types where relevant: timeliness, compliance, quality, completion rates, audit results.
-
-## 9.0 Records
-A markdown table for records generated by the process, with columns: Record Name, Form Number, Responsible Owner, Storage Location, Retention Information. Insert placeholders for any column the source material doesn't specify.
-
-## 10.0 References
-List related policies, procedures, standards, and regulations mentioned in or clearly implied by the source material. If none are identifiable, state that explicitly rather than inventing references.`;
+function field(body, key) {
+  const v = body?.[key];
+  return typeof v === 'string' ? v.trim() : '';
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -101,19 +224,35 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
-  const { title, sourceText } = req.body || {};
+  const body = req.body || {};
+  const procedureTitle = field(body, 'procedureTitle');
+  const goalScope = field(body, 'goalScope');
+  const audience = field(body, 'audience');
+  const region = field(body, 'region');
+  const currentProcess = field(body, 'currentProcess');
+  const additionalContext = field(body, 'additionalContext');
+  const industry = field(body, 'industry');
+  const mode = field(body, 'mode');
 
-  if (typeof title !== 'string' || !title.trim()) {
-    return res.status(400).json({ error: 'A procedure title is required.' });
+  if (!procedureTitle) {
+    return res.status(400).json({ error: 'Tell us what procedure you want to create.' });
   }
-  if (title.length > MAX_TITLE_LENGTH) {
-    return res.status(400).json({ error: `Title must be under ${MAX_TITLE_LENGTH} characters.` });
+  if (procedureTitle.length > MAX_TITLE_LENGTH) {
+    return res.status(400).json({ error: `Procedure title must be under ${MAX_TITLE_LENGTH} characters.` });
   }
-  if (typeof sourceText !== 'string' || !sourceText.trim()) {
-    return res.status(400).json({ error: 'Source material is required.' });
+  if (!goalScope) {
+    return res.status(400).json({ error: "Tell us the goal and what it should cover." });
   }
-  if (sourceText.length > MAX_SOURCE_LENGTH) {
-    return res.status(400).json({ error: `Source material must be under ${MAX_SOURCE_LENGTH} characters.` });
+  if (!currentProcess) {
+    return res.status(400).json({ error: 'Tell us what you currently do, or that there is no existing process yet.' });
+  }
+  for (const [name, value] of [
+    ['goalScope', goalScope], ['audience', audience], ['region', region],
+    ['currentProcess', currentProcess], ['additionalContext', additionalContext],
+  ]) {
+    if (value.length > MAX_FIELD_LENGTH) {
+      return res.status(400).json({ error: `${name} must be under ${MAX_FIELD_LENGTH} characters.` });
+    }
   }
 
   const accessCode = process.env.GENERATOR_ACCESS_CODE;
@@ -125,27 +264,34 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'The generator is not configured yet (missing API key).' });
   }
 
+  const briefLines = [
+    industry && `Industry: ${industry}`,
+    mode && `Mode emphasis: ${mode}`,
+    `What to create: ${procedureTitle}`,
+    `Goal and scope: ${goalScope}`,
+    audience && `Audience / stakeholders: ${audience}`,
+    region && `Country / region: ${region}`,
+    `Current process and requirements: ${currentProcess}`,
+    additionalContext && `Additional context: ${additionalContext}`,
+  ].filter(Boolean);
+
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
       max_tokens: 8000,
       system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `Procedure Title: ${title.trim()}\n\nSource Material:\n${sourceText.trim()}`,
-        },
-      ],
+      tools: [TOOL_SCHEMA],
+      tool_choice: { type: 'tool', name: 'generate_procedure' },
+      messages: [{ role: 'user', content: briefLines.join('\n') }],
     });
 
-    const block = message.content?.find((c) => c.type === 'text');
-    const draft = block ? block.text : '';
+    const toolUse = message.content?.find((c) => c.type === 'tool_use');
 
-    if (!draft) {
-      return res.status(502).json({ error: 'The generator returned an empty draft. Please try again.' });
+    if (!toolUse) {
+      return res.status(502).json({ error: 'The generator returned an unexpected response. Please try again.' });
     }
 
-    return res.status(200).json({ draft });
+    return res.status(200).json({ procedure: toolUse.input });
   } catch (err) {
     console.error('Anthropic API error:', err);
     return res.status(502).json({ error: 'The generator failed. Please try again in a moment.' });

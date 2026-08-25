@@ -91,6 +91,73 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastProcedure = null;
 
   // ---------------------------------------------------------------------
+  // Chip pickers (quick options with a free-text fallback)
+  // ---------------------------------------------------------------------
+  const CHIP_OPTIONS = {
+    'chips-title': [
+      'Client Onboarding', 'Employee Onboarding', 'Complaint Handling', 'Incident Reporting',
+      'Equipment Maintenance', 'Quality Inspection', 'Data Backup & Recovery', 'Vendor Onboarding',
+      'Access Control & Permissions', 'Change Management', 'Lockout/Tagout Safety', 'Invoice Processing',
+    ],
+    'chips-goal': [
+      'Standardize the process for consistency', 'Ensure regulatory compliance',
+      'Reduce errors and rework', 'Prepare for an upcoming audit',
+      'Train new staff faster', 'Improve response time',
+    ],
+    'chips-audience': [
+      'Front-line employees', 'Managers / Supervisors', 'Customers / Clients', 'Vendors / Suppliers',
+      'Compliance team', 'IT / Security team', 'Finance team', 'Contractors',
+    ],
+    'chips-region': [
+      'United States', 'European Union', 'United Kingdom', 'Canada', 'Australia', 'India', 'Global / Multiple Regions',
+    ],
+    'chips-extra': [
+      'Must reference specific software/systems', 'Requires manager approval above a threshold',
+      'Must include an audit trail', 'Has a strict deadline/SLA',
+      'Involves handling sensitive/confidential data', 'Requires customer notification',
+    ],
+  };
+
+  Object.entries(CHIP_OPTIONS).forEach(([rowId, options]) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    row.innerHTML = options.map((opt) => `<button type="button" class="chip">${opt}</button>`).join('');
+
+    const targetId = row.dataset.target;
+    const mode = row.dataset.mode;
+    const target = document.getElementById(targetId);
+
+    row.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const text = chip.textContent;
+
+        if (mode === 'set') {
+          const alreadySelected = chip.classList.contains('selected');
+          row.querySelectorAll('.chip').forEach((c) => c.classList.remove('selected'));
+          if (alreadySelected) {
+            target.value = '';
+          } else {
+            chip.classList.add('selected');
+            target.value = text;
+          }
+          return;
+        }
+
+        // append mode: toggle chip in/out of a "; "-joined value
+        const parts = target.value.split(';').map((s) => s.trim()).filter(Boolean);
+        const idx = parts.indexOf(text);
+        chip.classList.toggle('selected');
+        if (idx === -1) {
+          parts.push(text);
+        } else {
+          parts.splice(idx, 1);
+        }
+        target.value = parts.join('; ');
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------
   // Draft persistence
   // ---------------------------------------------------------------------
   function saveDraft() {
@@ -424,15 +491,18 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `<h3>${esc(label)}</h3>${list(items)}`
       : '');
 
-    const subprocessesHtml = (p.procedure || []).map((sub) => `
+    const subprocessesHtml = (p.procedure || []).map((sub, subIdx) => `
       <div class="doc-subprocess">
-        <h3>${esc(sub.id)} ${esc(sub.title)}</h3>
+        <div class="doc-subprocess-head">
+          <h3>${esc(sub.id)} ${esc(sub.title)}</h3>
+          <button type="button" class="btn btn-secondary doc-checklist-btn" data-subidx="${subIdx}">Print Checklist</button>
+        </div>
         ${sub.objective ? `<p><strong>Objective:</strong> ${esc(sub.objective)}</p>` : ''}
         ${sub.trigger ? `<p><strong>Trigger:</strong> ${esc(sub.trigger)}</p>` : ''}
         ${table(
           ['Step', 'Action', 'Role', 'Input', 'Output', 'Control', 'Record', 'Approval'],
           (sub.steps || []).map((s) => [
-            s.step, s.action + (s.isDecision ? `  [Decision — Yes: ${s.decisionYes || ''} / No: ${s.decisionNo || ''}]` : ''),
+            s.step, s.action + (s.isDecision ? ` (Decision. Yes: ${s.decisionYes || ''}. No: ${s.decisionNo || ''})` : ''),
             s.role, s.input || '', s.output || '', s.control || '', s.record || '', s.approval || '',
           ]),
         )}
@@ -597,6 +667,44 @@ document.addEventListener('DOMContentLoaded', () => {
       el.docxBtn.textContent = original;
       el.docxBtn.disabled = false;
     }
+  });
+
+  // "Print Checklist": a large-print, checkbox-style single-subprocess view
+  // suitable for posting at a workstation. Delegated since subprocess blocks
+  // are rendered dynamically.
+  const checklistContainer = document.getElementById('checklist-print');
+
+  el.content.addEventListener('click', (e) => {
+    const btn = e.target.closest('.doc-checklist-btn');
+    if (!btn || !lastProcedure) return;
+
+    const sub = lastProcedure.procedure?.[Number(btn.dataset.subidx)];
+    if (!sub) return;
+
+    const itemsHtml = (sub.steps || []).map((s) => `
+      <div class="checklist-item">
+        <div class="checklist-box"></div>
+        <div>
+          <div class="checklist-text">${esc(s.action)}</div>
+          ${s.control ? `<div class="checklist-meta">Control: ${esc(s.control)}</div>` : ''}
+          ${s.record ? `<div class="checklist-meta">Record: ${esc(s.record)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    checklistContainer.innerHTML = `
+      <h1>${esc(lastProcedure.metadata?.title || 'Procedure')}</h1>
+      <div class="checklist-sub">${esc(sub.id)} ${esc(sub.title)}</div>
+      ${itemsHtml}
+    `;
+
+    document.body.classList.add('checklist-mode');
+    window.print();
+  });
+
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('checklist-mode');
+    checklistContainer.innerHTML = '';
   });
 
   // ---------------------------------------------------------------------

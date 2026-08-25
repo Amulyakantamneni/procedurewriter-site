@@ -95,7 +95,9 @@
       <!-- Step 1 -->
       <div class="wizard-step" data-step="q1" hidden>
         <h2>What procedure do you want to create?</h2>
-        <p class="wizard-hint">A short title is enough, e.g. "Patient Complaint Handling" or "Vendor Onboarding."</p>
+        <p class="wizard-hint">Pick a common one below, or write your own.</p>
+        <div class="chip-row" id="chips-title" data-target="w-title" data-mode="set"></div>
+        <label class="w-own-label" for="w-title">Or write your own</label>
         <input type="text" id="w-title" class="w-input" placeholder="e.g. Client Intake and ID Verification">
       </div>
 
@@ -103,6 +105,8 @@
       <div class="wizard-step" data-step="q2" hidden>
         <h2>What is the goal of this procedure, and what should it cover?</h2>
         <p class="wizard-hint">Purpose, start and end points, and anything explicitly out of scope.</p>
+        <div class="chip-row" id="chips-goal" data-target="w-goal" data-mode="append"></div>
+        <label class="w-own-label" for="w-goal">Or write your own</label>
         <textarea id="w-goal" class="w-input w-textarea" placeholder="e.g. Make sure every new client is verified consistently before we open an account. Starts when a client submits an application, ends when the account is approved or declined."></textarea>
       </div>
 
@@ -110,6 +114,8 @@
       <div class="wizard-step" data-step="q3" hidden>
         <h2>Who is this procedure for, and who will use or be affected by it?</h2>
         <p class="wizard-hint">Teams, roles, departments, or customers involved. Optional, but it sharpens the responsibilities section.</p>
+        <div class="chip-row" id="chips-audience" data-target="w-audience" data-mode="append"></div>
+        <label class="w-own-label" for="w-audience">Or write your own</label>
         <textarea id="w-audience" class="w-input w-textarea" placeholder="e.g. Front desk staff, operations manager, compliance officer, and the client"></textarea>
       </div>
 
@@ -117,6 +123,8 @@
       <div class="wizard-step" data-step="q4" hidden>
         <h2>Which country or region will this procedure be used in?</h2>
         <p class="wizard-hint">Determines which regulations are relevant. Optional, but recommended.</p>
+        <div class="chip-row" id="chips-region" data-target="w-region" data-mode="set"></div>
+        <label class="w-own-label" for="w-region">Or write your own</label>
         <input type="text" id="w-region" class="w-input" placeholder="e.g. United States, European Union, Australia">
       </div>
 
@@ -124,14 +132,17 @@
       <div class="wizard-step" data-step="q5" hidden>
         <h2>What do you currently do, or what requirements should this procedure follow?</h2>
         <p class="wizard-hint">Plain English is fine. The more specific, the better the draft.</p>
-        <textarea id="w-current" class="w-input w-textarea" placeholder="Describe today's process step by step, or the requirements it needs to satisfy..."></textarea>
         <button type="button" class="btn btn-secondary w-noprocess" id="w-noprocess-btn">We don't have an existing process</button>
+        <label class="w-own-label" for="w-current" style="margin-top:16px;">Or describe it yourself</label>
+        <textarea id="w-current" class="w-input w-textarea" placeholder="Describe today's process step by step, or the requirements it needs to satisfy..."></textarea>
       </div>
 
       <!-- Step 6 -->
       <div class="wizard-step" data-step="q6" hidden>
         <h2>Is there anything else the procedure must include?</h2>
         <p class="wizard-hint">Systems, tools, approvals, KPIs, forms, risks. Optional.</p>
+        <div class="chip-row" id="chips-extra" data-target="w-extra" data-mode="append"></div>
+        <label class="w-own-label" for="w-extra">Or write your own</label>
         <textarea id="w-extra" class="w-input w-textarea" placeholder="e.g. Must reference our CRM tool, needs manager sign-off over $5,000..."></textarea>
       </div>
 
@@ -215,6 +226,8 @@
     </div>
   </div>
 </footer>
+
+<div id="checklist-print" class="checklist-print"></div>
 
 <script src="js/main.js"></script>
 <script src="js/generate.js"></script>

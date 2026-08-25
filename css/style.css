@@ -1250,6 +1250,41 @@ header.site-nav.scrolled {
   padding: 9px 16px;
 }
 
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.chip {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-300);
+  background: var(--bg-800);
+  border: 1px solid var(--border-600);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.chip:hover { border-color: var(--indigo-400); color: var(--text-000); }
+
+.chip.selected {
+  background: rgba(91, 110, 240, 0.16);
+  border-color: var(--indigo-500);
+  color: var(--text-000);
+}
+
+.w-own-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-500);
+  margin-bottom: 8px;
+}
+
 .wizard-nav {
   display: flex;
   justify-content: space-between;
@@ -1388,6 +1423,16 @@ header.site-nav.scrolled {
 .doc-subprocess { margin-bottom: 32px; padding-bottom: 28px; border-bottom: 1px dashed var(--border-700); }
 .doc-subprocess:last-child { border-bottom: none; }
 
+.doc-subprocess-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.doc-checklist-btn { padding: 7px 14px; font-size: 0.78rem; flex-shrink: 0; }
+
 .doc-diagram {
   background: var(--bg-800);
   border: 1px solid var(--border-700);
@@ -1427,6 +1472,25 @@ header.site-nav.scrolled {
 .doc-quality-recs ul { margin: 8px 0 0 20px; }
 
 /* ---------- Print ---------- */
+.checklist-print { display: none; }
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+  break-inside: avoid;
+}
+
+.checklist-box {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 2px solid #000;
+  margin-top: 2px;
+}
+
 @media print {
   header.site-nav, footer.site-footer, .page-hero, .wizard-progress,
   .resume-banner, .doc-sidebar, .doc-toolbar, .marquee { display: none !important; }
@@ -1435,6 +1499,16 @@ header.site-nav.scrolled {
   .doc-section h2, .doc-section h3, .doc-section p, .doc-section li,
   .doc-table th, .doc-table td { color: #000 !important; }
   .doc-callout { color: #000; background: #f3f3f3; }
+
+  /* Checklist mode: hide everything except the checklist container */
+  body.checklist-mode > *:not(#checklist-print) { display: none !important; }
+  body.checklist-mode #checklist-print { display: block !important; }
+
+  .checklist-print { color: #000; font-family: var(--font-body); }
+  .checklist-print h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .checklist-print .checklist-sub { font-size: 1.1rem; color: #333; margin-bottom: 24px; }
+  .checklist-print .checklist-text { font-size: 1.15rem; line-height: 1.4; }
+  .checklist-print .checklist-meta { font-size: 0.85rem; color: #555; margin-top: 4px; }
 }
 
 @media (max-width: 900px) {

@@ -292,12 +292,17 @@ export default async function handler(req, res) {
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [TOOL_SCHEMA],
       tool_choice: { type: 'tool', name: 'generate_procedure' },
       messages: [{ role: 'user', content: briefLines.join('\n') }],
     });
+
+    if (message.stop_reason === 'max_tokens') {
+      console.error('Generation truncated at max_tokens.');
+      return res.status(502).json({ error: 'The draft was too long to complete. Try a narrower scope or shorter source material, then try again.' });
+    }
 
     const toolUse = message.content?.find((c) => c.type === 'tool_use');
 

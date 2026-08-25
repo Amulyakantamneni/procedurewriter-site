@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (response.ok) {
-          status.textContent = "Thanks — we'll be in touch within one business day.";
+          status.textContent = "Thanks. We'll be in touch within one business day.";
           status.className = 'form-status success';
           form.reset();
         } else {

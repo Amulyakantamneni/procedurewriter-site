@@ -383,7 +383,7 @@ header.site-nav {
 
 .card p { font-size: 0.92rem; }
 
-.card a.card-link {
+.card-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -433,7 +433,10 @@ header.site-nav {
   border: 1px solid var(--border-700);
   border-radius: var(--radius-md);
   overflow: hidden;
+  transition: border-color 0.18s ease;
 }
+
+.industry-card:hover { border-color: var(--border-600); }
 
 .industry-photo {
   position: relative;
@@ -706,6 +709,8 @@ header.site-nav {
   border-bottom: 1px solid var(--border-700);
 }
 
+.service-row:hover h3 { color: var(--indigo-400); }
+
 .service-row:last-child { border-bottom: none; }
 
 .service-row .card-icon { margin-bottom: 0; }
@@ -953,12 +958,14 @@ header.site-nav.scrolled {
 .nav-links a.active::after { transform: scaleX(1); }
 
 /* ---------- Micro-interactions ---------- */
-.card a.card-link .arrow {
+.arrow {
   display: inline-block;
   transition: transform 0.2s ease;
 }
 
-.card a.card-link:hover .arrow { transform: translateX(4px); }
+.card:hover .arrow,
+.industry-card:hover .arrow,
+.service-row:hover .arrow { transform: translateX(4px); }
 
 /* ---------- Motion (disabled for reduced-motion users) ---------- */
 @media (prefers-reduced-motion: no-preference) {

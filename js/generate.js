@@ -13,8 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!form.submit) return;
 
+  // Pre-fill from ?industry= or ?service= so clicking through from the
+  // Industries or Services pages lands somewhere purposeful, not a blank form.
+  const params = new URLSearchParams(window.location.search);
+  const industry = params.get('industry');
+  const service = params.get('service');
+  if (industry) {
+    form.title.value = `${industry} Procedure`;
+    form.source.placeholder = `Describe the ${industry.toLowerCase()} process you want documented: who's involved, the steps it follows today, and anything it needs to comply with...`;
+  } else if (service) {
+    form.title.value = service;
+    form.source.placeholder = `Paste the notes or process details relevant to ${service.toLowerCase()}...`;
+  }
+
   // procedurewriter.ai and the github.io URL are both served by GitHub
-  // Pages, which can't run server code — the API only exists on Vercel.
+  // Pages, which can't run server code; the API only exists on Vercel.
   // Only skip the absolute URL when this page is itself being viewed via
   // the Vercel deployment (same-origin call).
   const VERCEL_API_BASE = 'https://procedurewriter-site.vercel.app';
@@ -42,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.submit.disabled = true;
     form.submit.textContent = 'Generating…';
-    form.output.textContent = 'Drafting your procedure — this can take a few seconds…';
+    form.output.textContent = 'Drafting your procedure. This can take a few seconds…';
     form.copyBtn.disabled = true;
     form.downloadBtn.disabled = true;
 
@@ -68,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
       form.filename.textContent = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'draft'}.md`;
       form.copyBtn.disabled = false;
       form.downloadBtn.disabled = false;
-      form.status.textContent = 'Draft ready — review it below before using it anywhere real.';
+      form.status.textContent = 'Draft ready. Review it below before using it anywhere real.';
       form.status.className = 'form-status success';
     } catch (err) {
       form.output.textContent = 'Your generated draft will appear here.';

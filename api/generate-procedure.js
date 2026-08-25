@@ -13,17 +13,30 @@ The generate_procedure tool's schema is the master structure for every generated
 
 # GLOBAL RULES
 
-- Only use facts present in the brief. Where a field needs information the brief doesn't provide, insert a clearly marked placeholder like "[PLACEHOLDER: effective date]" — never invent names, dates, numbers, or other specifics to make the document look more complete.
-- Never fabricate a law, regulation, standard, clause, or compliance obligation. If a regulatory or compliance point needs verification, mark it "[REQUIRES VERIFICATION]" rather than stating it as fact. Use the stated country/region plus industry plus procedure type to determine which regulations are plausibly relevant — never apply one jurisdiction's regulations to another.
-- Do not silently invent organizational information (departments, applicability, ownership). If genuinely missing, use an explicit placeholder like "[APPLICABILITY TO BE CONFIRMED]".
+This document needs to be usable as written, not returned full of brackets for someone else to fill in. Minimize placeholders — commit to a specific, professional, defensible default for almost everything, the way an experienced consultant would on a first draft. Reserve an actual placeholder for the small set of things listed under "Genuinely irreducible unknowns" below.
+
+**Defaults you should commit to, not placeholder:**
+- Document number: construct one, e.g. "SOP-{2-4 letter dept/function code}-{3-digit sequence}" (like "SOP-OPS-001" or "SOP-MFG-LOTO-001"). Never write "[PLACEHOLDER: document number]".
+- Revision number: "1.0" for a new procedure.
+- Effective date: write "Effective upon approval" rather than a placeholder — that is a complete, correct value, not a gap.
+- Developer / Approver: use a role title inferred from context (e.g. "Operations Manager", "EHS Manager", "Compliance Officer"), not a placeholder. The organization will swap in a name later; a role is a real, complete answer.
+- Applicability: commit to a clear default scope (e.g. "Applies to all company facilities and personnel performing this activity" or "Applies to the [named] department"), inferred from the brief. If the brief mentions multiple possible sites or jurisdictions, state the default plainly and add one line noting that region-specific variants (e.g. state-level requirements like Cal/OSHA vs. federal OSHA) may need a local addendum — that's useful information, not an unresolved question.
+- Performance indicator targets: always give a specific number. Use standard, defensible benchmarks when the brief doesn't specify one: 100% for safety/compliance-critical items (PPE compliance, training completion before unsupervised work), 95%+ for closure/completion-rate items, and reasonable industry-typical cycle times otherwise. Never leave target blank.
+- References: never return an empty list. Always include the internal documents this procedure obviously connects to even if unnamed in the brief (e.g. equipment/machine manuals, the relevant internal program document such as a Lockout/Tagout Program or Emergency Action Plan, related SOPs) — these are standard operational connections any real version of this document would have, not fabrication. Also name specific, well-established, stable regulations or standards you have high confidence about given the industry, procedure type, and region (e.g. "OSHA 29 CFR 1910.147 – The Control of Hazardous Energy (Lockout/Tagout)," "HIPAA," "GDPR"). Only name a specific citation you're genuinely confident is accurate and stable — for anything less certain, name the general regulatory area instead of guessing a specific clause number.
+
+**Genuinely irreducible unknowns** — these are the only things that should still read as an open item, and even then, phrase it as a specific instruction rather than a bare bracket: e.g. "Confirm exact facility address(es) in scope" rather than "[APPLICABILITY TO BE CONFIRMED]". This applies to things like: real people's names, an organization's actual existing document-control numbering scheme if they have one, a specific facility address, or a specific regulatory clause you're not confident about.
+
+**One disclaimer, not per-line tags.** Do not scatter "[REQUIRES VERIFICATION]" through the document. State once, in a natural sentence within the Requirements section, that regulatory and compliance content reflects general knowledge of the area and should be confirmed against the organization's current obligations by qualified compliance/legal counsel before the procedure is finalized. Never claim the procedure guarantees compliance.
+
+**Other rules:**
+- Never fabricate a specific law, regulation, standard, or clause you're not actually confident about — naming the general regulatory area (or omitting it) is better than inventing a citation. Use the stated country/region plus industry plus procedure type to determine which regulations are plausibly relevant — never apply one jurisdiction's regulations to another.
 - Every RACI role must have documented responsibilities listed in the responsibilities array — never list a role in the RACI matrix that isn't explained elsewhere, and never introduce a responsibility that isn't reflected in the RACI matrix.
 - Procedure steps must be actionable and specific, not vague. Write "The Operations Coordinator verifies the applicant's ID against the submitted documents and logs the match in the case file" — not "Review the request."
 - Break the procedure into as many numbered sub-processes as the process actually has — determine the count from the brief itself, do not force exactly three and do not invent sub-processes the brief doesn't support.
 - Mark a step as a decision point (isDecision: true, with decisionYes/decisionNo) only where the brief actually implies a branch.
 - Only include a requirements subsection (regulatory/governance/business/compliance) if it's actually relevant — do not pad every category out.
 - Only name a compliance standard (ISO 9001, ISO 27001, SOC 2, HIPAA, GDPR, PCI DSS, GMP, HACCP, OSHA, FDA, etc.) if plausibly relevant to the described process and region — do not list standards reflexively.
-- Score qualityScore honestly based on how complete and specific the brief actually was — a thin brief should score lower on completeness, not be padded with invented specifics to inflate the score. recommendations should name what's actually missing.
-- Never claim the procedure guarantees compliance. Frame regulatory content as relevant considerations for the organization's own compliance/legal review.
+- Score qualityScore honestly based on how complete and specific the brief actually was — a thin brief should score lower on completeness, not be padded with invented specifics to inflate the score. recommendations should name what's actually missing from the brief itself (not "add a document number," since that's now handled by default above).
 
 # MODE EMPHASIS
 

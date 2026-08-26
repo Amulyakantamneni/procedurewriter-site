@@ -210,6 +210,60 @@ header.site-nav {
 
 .nav-toggle span { width: 22px; height: 2px; background: var(--text-100); border-radius: 2px; }
 
+/* ---------- Language switcher ---------- */
+.lang-switch { position: relative; }
+
+.lang-switch summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-300);
+  padding: 8px 6px;
+}
+
+.lang-switch summary::-webkit-details-marker { display: none; }
+.lang-switch summary:hover { color: var(--text-000); }
+
+.lang-switch summary::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  margin-top: -3px;
+}
+
+.lang-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-900);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  min-width: 140px;
+  box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+.lang-menu a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-300);
+}
+
+.lang-menu a:hover { background: var(--bg-800); color: var(--text-000); }
+.lang-menu a.active { color: var(--indigo-400); font-weight: 700; }
+
+[dir="rtl"] .lang-menu { right: auto; left: 0; }
+
 /* ---------- Hero ---------- */
 .hero {
   padding: 168px 0 100px;
@@ -1624,3 +1678,16 @@ header.site-nav.scrolled {
   .wizard-nav { flex-wrap: wrap; }
   .wizard-nav .btn { flex: 1; min-width: 120px; }
 }
+
+/* ==========================================================================
+   RTL (Arabic). Flexbox/grid layouts mirror automatically once dir="rtl" is
+   set on <html> — these are the physical left/right declarations that don't.
+   ========================================================================== */
+[dir="rtl"] .doc-panel-bar .filename { margin-left: 0; margin-right: 8px; }
+[dir="rtl"] .step { border-left: none; border-right: 3px solid var(--indigo-500); }
+[dir="rtl"] .doc-callout { border-left: none; border-right: 3px solid var(--indigo-500); }
+[dir="rtl"] .industry-photo .card-icon { left: auto; right: 20px; }
+[dir="rtl"] .mosaic-live { left: auto; right: 12px; }
+[dir="rtl"] .faq-question { text-align: right; }
+[dir="rtl"] .doc-table th, [dir="rtl"] .doc-table td { text-align: right; }
+[dir="rtl"] .nav-links a::after { left: auto; right: 0; }

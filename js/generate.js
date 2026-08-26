@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!rows || !rows.length) return '<p>None identified.</p>';
     const head = `<tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>`;
     const body = rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
-    return `<table class="doc-table">${head}${body}</table>`;
+    return `<div class="table-scroll"><table class="doc-table">${head}${body}</table></div>`;
   }
 
   function mermaidId(prefix, i) { return `${prefix}${i}`; }

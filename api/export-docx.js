@@ -1,30 +1,67 @@
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
-  WidthType, AlignmentType, BorderStyle, ShadingType,
+  WidthType, AlignmentType, BorderStyle, ShadingType, Header, Footer, PageNumber,
+  TabStopType, TabStopPosition, VerticalAlign,
 } from 'docx';
 
 const MAX_BODY_SIZE = 300000;
 
+// Brand palette, print-safe
+const NAVY = '1E3A5F';
+const NAVY_DARK = '15293F';
+const GOLD = 'B3904F';
+const INK = '1A1A1A';
+const MUTED = '5B6472';
+const BORDER = 'C9D2DC';
+const ROW_ALT = 'F3F6F9';
+const FONT = 'Calibri';
+
 function txt(text, opts = {}) {
-  return new Paragraph({ children: [new TextRun({ text: String(text ?? ''), ...opts })], spacing: { after: 120 } });
+  return new Paragraph({
+    children: [new TextRun({ text: String(text ?? ''), font: FONT, color: INK, ...opts })],
+    spacing: { after: 140 },
+  });
 }
 
 function heading(text, level = HeadingLevel.HEADING_2) {
-  return new Paragraph({ text: String(text ?? ''), heading: level, spacing: { before: 300, after: 150 } });
+  const sizes = { [HeadingLevel.HEADING_1]: 30, [HeadingLevel.HEADING_2]: 25, [HeadingLevel.HEADING_3]: 21 };
+  return new Paragraph({
+    children: [new TextRun({
+      text: String(text ?? ''), font: FONT, bold: true,
+      color: level === HeadingLevel.HEADING_3 ? GOLD : NAVY,
+      size: sizes[level] || 22,
+    })],
+    heading: level,
+    spacing: { before: 340, after: 160 },
+    border: level !== HeadingLevel.HEADING_3
+      ? { bottom: { style: BorderStyle.SINGLE, size: 6, color: level === HeadingLevel.HEADING_1 ? NAVY : BORDER, space: 4 } }
+      : undefined,
+  });
 }
 
 function bullets(items = []) {
-  if (!items.length) return [txt('None identified.')];
-  return items.map((item) => new Paragraph({ text: String(item), bullet: { level: 0 }, spacing: { after: 80 } }));
+  if (!items.length) return [txt('None identified.', { italics: true, color: MUTED })];
+  return items.map((item) => new Paragraph({
+    children: [new TextRun({ text: String(item), font: FONT, color: INK })],
+    bullet: { level: 0 },
+    spacing: { after: 90 },
+  }));
 }
 
-function cell(text, { header = false, width } = {}) {
+function cell(text, { header = false, width, shade } = {}) {
   return new TableCell({
     width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
-    shading: header ? { type: ShadingType.SOLID, color: '1F2937', fill: '1F2937' } : undefined,
+    shading: header
+      ? { type: ShadingType.SOLID, color: NAVY, fill: NAVY }
+      : shade ? { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT } : undefined,
+    verticalAlign: VerticalAlign.CENTER,
+    margins: { top: 80, bottom: 80, left: 100, right: 100 },
     children: [
       new Paragraph({
-        children: [new TextRun({ text: String(text ?? ''), bold: header, color: header ? 'FFFFFF' : undefined, size: 20 })],
+        children: [new TextRun({
+          text: String(text ?? ''), font: FONT, bold: header,
+          color: header ? 'FFFFFF' : INK, size: 19,
+        })],
       }),
     ],
   });
@@ -34,29 +71,75 @@ function table(headerCells, rows) {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: {
-      top: { style: BorderStyle.SINGLE, size: 2, color: 'CBD5E1' },
-      bottom: { style: BorderStyle.SINGLE, size: 2, color: 'CBD5E1' },
-      left: { style: BorderStyle.SINGLE, size: 2, color: 'CBD5E1' },
-      right: { style: BorderStyle.SINGLE, size: 2, color: 'CBD5E1' },
-      insideHorizontal: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0' },
-      insideVertical: { style: BorderStyle.SINGLE, size: 2, color: 'E2E8F0' },
+      top: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      left: { style: BorderStyle.SINGLE, size: 2, color: BORDER },
+      right: { style: BorderStyle.SINGLE, size: 2, color: BORDER },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 2, color: BORDER },
+      insideVertical: { style: BorderStyle.SINGLE, size: 2, color: BORDER },
     },
     rows: [
       new TableRow({ children: headerCells.map((h) => cell(h, { header: true })), tableHeader: true }),
-      ...rows.map((r) => new TableRow({ children: r.map((v) => cell(v)) })),
+      ...rows.map((r, i) => new TableRow({ children: r.map((v) => cell(v, { shade: i % 2 === 1 })) })),
+    ],
+  });
+}
+
+function buildHeader(title, docNumber) {
+  return new Header({
+    children: [
+      new Paragraph({
+        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: NAVY, space: 6 } },
+        children: [
+          new TextRun({ text: String(title || 'Procedure'), font: FONT, bold: true, color: NAVY, size: 18 }),
+          new TextRun({ text: `\t${docNumber || ''}`, font: FONT, color: MUTED, size: 16 }),
+        ],
+      }),
+    ],
+  });
+}
+
+function buildFooter(classification) {
+  return new Footer({
+    children: [
+      new Paragraph({
+        tabStops: [
+          { type: TabStopType.CENTER, position: TabStopPosition.MAX / 2 },
+          { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+        ],
+        border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER, space: 6 } },
+        children: [
+          new TextRun({ text: classification, font: FONT, color: MUTED, size: 15 }),
+          new TextRun({ text: '\t', font: FONT, size: 15 }),
+          new TextRun({ text: 'Page ', font: FONT, color: MUTED, size: 15 }),
+          new TextRun({ children: [PageNumber.CURRENT], font: FONT, color: MUTED, size: 15 }),
+          new TextRun({ text: ' of ', font: FONT, color: MUTED, size: 15 }),
+          new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, color: MUTED, size: 15 }),
+        ],
+      }),
     ],
   });
 }
 
 function buildDoc(p) {
   const children = [];
+  const title = p.metadata?.title || 'Procedure';
+  const docNumber = p.metadata?.documentNumber || '';
 
-  children.push(new Paragraph({ text: p.metadata?.title || 'Procedure', heading: HeadingLevel.TITLE, spacing: { after: 200 } }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 44 })],
+    spacing: { after: 60 },
+  }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: GOLD, bold: true, size: 20 })],
+    spacing: { after: 240 },
+  }));
 
   children.push(table(
     ['Field', 'Value'],
     [
-      ['Document Number', p.metadata?.documentNumber || ''],
+      ['Document Number', docNumber],
       ['Revision Number', p.metadata?.revisionNumber || ''],
       ['Effective Date', p.metadata?.effectiveDate || ''],
       ['Developer', p.metadata?.developer || ''],
@@ -65,45 +148,45 @@ function buildDoc(p) {
   ));
 
   if (p.revisionHistory?.length) {
-    children.push(heading('Revision History'));
+    children.push(heading('Revision History', HeadingLevel.HEADING_3));
     children.push(table(
       ['Revision', 'Date', 'Changes', 'Developer', 'Approver'],
       p.revisionHistory.map((r) => [r.revision, r.date, r.changes, r.developer, r.approver]),
     ));
   }
 
-  children.push(heading('1.0 Purpose'));
+  children.push(heading('1.0 Purpose', HeadingLevel.HEADING_1));
   children.push(txt(p.purpose || ''));
 
-  children.push(heading('2.0 Scope'));
+  children.push(heading('2.0 Scope', HeadingLevel.HEADING_1));
   children.push(txt(p.scope?.summary || ''));
-  children.push(txt(`Start: ${p.scope?.start || ''}`));
-  children.push(txt(`End: ${p.scope?.end || ''}`));
+  children.push(txt(`Start: ${p.scope?.start || ''}`, { bold: true }));
+  children.push(txt(`End: ${p.scope?.end || ''}`, { bold: true }));
   if (p.scope?.exclusions?.length) {
-    children.push(txt('Exclusions:', { bold: true }));
+    children.push(txt('Exclusions', { bold: true, color: NAVY }));
     children.push(...bullets(p.scope.exclusions));
   }
 
-  children.push(heading('3.0 Applicability'));
+  children.push(heading('3.0 Applicability', HeadingLevel.HEADING_1));
   children.push(txt(p.applicability || ''));
 
-  children.push(heading('4.0 Requirements'));
+  children.push(heading('4.0 Requirements', HeadingLevel.HEADING_1));
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
-      children.push(txt(label, { bold: true }));
+      children.push(heading(label, HeadingLevel.HEADING_3));
       children.push(...bullets(items));
     }
   }
 
   if (p.definitions?.length) {
-    children.push(heading('5.0 Terms and Definitions'));
+    children.push(heading('5.0 Terms and Definitions', HeadingLevel.HEADING_1));
     children.push(table(['Term', 'Definition'], p.definitions.map((d) => [d.term, d.definition])));
   }
 
-  children.push(heading('6.0 Responsibilities'));
+  children.push(heading('6.0 Responsibilities', HeadingLevel.HEADING_1));
   for (const r of p.responsibilities || []) {
-    children.push(txt(r.role, { bold: true }));
+    children.push(heading(r.role, HeadingLevel.HEADING_3));
     children.push(...bullets(r.responsibilities));
   }
   if (p.raci?.length) {
@@ -114,9 +197,9 @@ function buildDoc(p) {
     ));
   }
 
-  children.push(heading('7.0 Procedure'));
+  children.push(heading('7.0 Procedure', HeadingLevel.HEADING_1));
   for (const sub of p.procedure || []) {
-    children.push(heading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_3));
+    children.push(heading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_2));
     if (sub.objective) children.push(txt(`Objective: ${sub.objective}`));
     if (sub.trigger) children.push(txt(`Trigger: ${sub.trigger}`));
     if (sub.steps?.length) {
@@ -125,11 +208,11 @@ function buildDoc(p) {
         sub.steps.map((s) => [s.step, s.action, s.role, s.input || '', s.output || '', s.control || '', s.record || '']),
       ));
     }
-    if (sub.exceptions) children.push(txt(`Exceptions/Escalations: ${sub.exceptions}`));
+    if (sub.exceptions) children.push(txt(`Exceptions/Escalations: ${sub.exceptions}`, { italics: true }));
   }
 
   if (p.kpis?.length) {
-    children.push(heading('8.0 Performance Indicators'));
+    children.push(heading('8.0 Performance Indicators', HeadingLevel.HEADING_1));
     children.push(table(
       ['Indicator', 'Description', 'Responsible Role', 'Target'],
       p.kpis.map((k) => [k.indicator, k.description, k.role, k.target]),
@@ -137,17 +220,33 @@ function buildDoc(p) {
   }
 
   if (p.records?.length) {
-    children.push(heading('9.0 Records'));
+    children.push(heading('9.0 Records', HeadingLevel.HEADING_1));
     children.push(table(
       ['Record Name', 'Form Number', 'Owner', 'Storage Location', 'Retention'],
       p.records.map((r) => [r.name, r.formNumber, r.owner, r.location, r.retention]),
     ));
   }
 
-  children.push(heading('10.0 References'));
+  children.push(heading('10.0 References', HeadingLevel.HEADING_1));
   children.push(...bullets(p.references));
 
-  return new Document({ sections: [{ properties: {}, children }] });
+  return new Document({
+    styles: {
+      default: {
+        document: { run: { font: FONT, size: 21, color: INK } },
+      },
+    },
+    sections: [{
+      properties: {
+        page: {
+          margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 },
+        },
+      },
+      headers: { default: buildHeader(title, docNumber) },
+      footers: { default: buildFooter('CONFIDENTIAL - INTERNAL USE ONLY') },
+      children,
+    }],
+  });
 }
 
 export default async function handler(req, res) {

@@ -44,7 +44,18 @@ If a mode is provided, shift emphasis without dropping other sections:
 - "sop": prioritize procedure structure, step-by-step activities, responsibilities, process flow, records, controls.
 - "compliance": prioritize country/region-specific regulations, standards, controls, evidence, records, audit readiness.
 - "process-mapping": prioritize process flow, activities, decision points, inputs, outputs, roles, interfaces.
-- Any other mode value (e.g. "ai-governance", "documentation-audit", "rollout-training"): infer reasonable emphasis from the mode name itself and the brief.`;
+- Any other mode value (e.g. "ai-governance", "documentation-audit", "rollout-training"): infer reasonable emphasis from the mode name itself and the brief.
+
+# REGIONAL AWARENESS
+
+When the region is a Gulf state, use terminology and regulatory bodies actually relevant there instead of defaulting to US/EU assumptions:
+- United Arab Emirates: note the distinction between mainland (federal law, e.g. UAE Central Bank for financial services, MOHAP/DHA/DOH for healthcare depending on emirate) and free zones (each free zone, e.g. DIFC or ADGM, has its own regulator and can have materially different rules) — if the brief doesn't specify which, flag that distinction rather than picking one silently.
+- Saudi Arabia: relevant bodies by domain can include SFDA (health/pharma), SAMA (financial services), NCA (cybersecurity/data), and the PDPL (personal data protection law) for privacy-related processes.
+Only name a specific body or law you're actually confident is correct and current for that domain — the same no-fabrication rule applies here as everywhere else; when unsure, name the general regulatory area rather than a specific body.
+
+# INDUSTRY SPECIFICITY
+
+Do not write a generic procedure with the industry's name swapped in. Use the vocabulary, systems, roles, and concerns an actual practitioner in that industry and procedure type would use — the kind of specifics that make a reader trust the document was written by someone who understands the work, not templated. Reflect the specific procedure type named in the brief (e.g. a "Patient Complaint Handling" procedure and a "Infection Control Protocol" procedure for the same hospital should read as clearly different documents, not the same skeleton with a new title).`;
 
 const TOOL_SCHEMA = {
   name: 'generate_procedure',

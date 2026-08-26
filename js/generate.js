@@ -93,36 +93,81 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------------
   // Chip pickers (quick options with a free-text fallback)
   // ---------------------------------------------------------------------
-  const CHIP_OPTIONS = {
-    'chips-title': [
-      'Client Onboarding', 'Employee Onboarding', 'Complaint Handling', 'Incident Reporting',
-      'Equipment Maintenance', 'Quality Inspection', 'Data Backup & Recovery', 'Vendor Onboarding',
-      'Access Control & Permissions', 'Change Management', 'Lockout/Tagout Safety', 'Invoice Processing',
+  const DEFAULT_TITLE_CHIPS = [
+    'Client Onboarding', 'Employee Onboarding', 'Complaint Handling', 'Incident Reporting',
+    'Equipment Maintenance', 'Quality Inspection', 'Data Backup & Recovery', 'Vendor Onboarding',
+    'Access Control & Permissions', 'Change Management', 'Audit Preparation', 'Invoice Processing',
+  ];
+
+  // Document types shown as title-step chips, keyed by the readable industry
+  // label (see INDUSTRY_LABELS above and the wizard's <select> options) so
+  // the suggestions are actually relevant to the chosen industry instead of
+  // one generic list for everyone.
+  const INDUSTRY_DOCTYPES = {
+    'Healthcare & Medical': [
+      'Patient Intake & Registration', 'Patient Complaint Handling', 'Infection Control Protocol',
+      'Medication Administration', 'HIPAA Compliance Procedure', 'Clinical Documentation Standard', 'Discharge Planning',
     ],
-    'chips-goal': [
-      'Standardize the process for consistency', 'Ensure regulatory compliance',
-      'Reduce errors and rework', 'Prepare for an upcoming audit',
-      'Train new staff faster', 'Improve response time',
+    'Manufacturing': [
+      'Lockout/Tagout Safety', 'Quality Inspection', 'Equipment Maintenance', 'Production Changeover',
+      'Non-Conformance Handling', 'Supplier Quality Audit',
     ],
-    'chips-audience': [
-      'Front-line employees', 'Managers / Supervisors', 'Customers / Clients', 'Vendors / Suppliers',
-      'Compliance team', 'IT / Security team', 'Finance team', 'Contractors',
+    'Information Technology / Software': [
+      'Incident Response', 'Access Control & Permissions', 'Change Management', 'Data Backup & Recovery',
+      'Release / Deployment Process', 'Vendor & Third-Party Risk Assessment',
     ],
-    'chips-region': [
-      'United States', 'European Union', 'United Kingdom', 'Canada', 'Australia', 'India', 'Global / Multiple Regions',
+    'Finance & Banking': [
+      'KYC & Customer Onboarding', 'AML Transaction Monitoring', 'Loan Approval Process',
+      'Fraud Investigation', 'Regulatory Reporting',
     ],
-    'chips-extra': [
-      'Must reference specific software/systems', 'Requires manager approval above a threshold',
-      'Must include an audit trail', 'Has a strict deadline/SLA',
-      'Involves handling sensitive/confidential data', 'Requires customer notification',
+    'Insurance': [
+      'Claims Processing', 'Underwriting Review', 'Policy Renewal', 'Fraud Detection', 'Customer Complaint Handling',
+    ],
+    'Pharmaceutical & Life Sciences': [
+      'Batch Record Review', 'Deviation & CAPA', 'GMP Compliance Audit', 'Clinical Trial Documentation', 'Adverse Event Reporting',
+    ],
+    'Construction': [
+      'Site Safety Inspection', 'Permit & Compliance Tracking', 'Subcontractor Onboarding',
+      'Incident Reporting', 'Equipment Inspection',
+    ],
+    'Automotive': [
+      'Quality Control Inspection', 'Recall Management', 'Supplier Audit', 'Warranty Claims Processing',
+    ],
+    'Food & Beverage': [
+      'HACCP Food Safety Plan', 'Allergen Control', 'Supplier Verification', 'Recall & Traceability', 'Sanitation Procedure',
+    ],
+    'Logistics & Supply Chain': [
+      'Inventory Management', 'Shipment & Receiving Inspection', 'Vendor Onboarding', 'Cold Chain Monitoring', 'Returns Processing',
+    ],
+    'Retail & E-commerce': [
+      'Order Fulfillment', 'Returns & Refunds', 'Loss Prevention', 'Customer Complaint Handling', 'Inventory Cycle Count',
+    ],
+    'Energy & Utilities': [
+      'Field Safety Inspection', 'Outage Response', 'Environmental Compliance Reporting', 'Equipment Maintenance',
+    ],
+    'Government & Public Sector': [
+      'Records Management', 'Public Records Request Handling', 'Procurement Process', 'Incident Reporting',
+    ],
+    'Education': [
+      'Student Enrollment', 'Incident & Safety Reporting', 'Grade Appeal Process', 'Title IX Complaint Handling',
+    ],
+    'Professional Services': [
+      'Client Onboarding', 'Engagement / Project Kickoff', 'Quality Review', 'Conflict of Interest Check',
+    ],
+    'Legal & Compliance': [
+      'Matter Intake & Conflict Check', 'Contract Review Process', 'Regulatory Filing', 'Internal Investigation',
     ],
   };
 
-  Object.entries(CHIP_OPTIONS).forEach(([rowId, options]) => {
-    const row = document.getElementById(rowId);
+  function populateTitleChips() {
+    const row = document.getElementById('chips-title');
     if (!row) return;
-    row.innerHTML = options.map((opt) => `<button type="button" class="chip">${opt}</button>`).join('');
+    const options = INDUSTRY_DOCTYPES[state.industry] || DEFAULT_TITLE_CHIPS;
+    wireChipRow(row, options);
+  }
 
+  function wireChipRow(row, options) {
+    row.innerHTML = options.map((opt) => `<button type="button" class="chip">${opt}</button>`).join('');
     const targetId = row.dataset.target;
     const mode = row.dataset.mode;
     const target = document.getElementById(targetId);
@@ -143,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // append mode: toggle chip in/out of a "; "-joined value
         const parts = target.value.split(';').map((s) => s.trim()).filter(Boolean);
         const idx = parts.indexOf(text);
         chip.classList.toggle('selected');
@@ -155,6 +199,35 @@ document.addEventListener('DOMContentLoaded', () => {
         target.value = parts.join('; ');
       });
     });
+  }
+
+  const CHIP_OPTIONS = {
+    'chips-goal': [
+      'Standardize the process for consistency', 'Ensure regulatory compliance',
+      'Reduce errors and rework', 'Prepare for an upcoming audit',
+      'Train new staff faster', 'Improve response time',
+    ],
+    'chips-audience': [
+      'Front-line employees', 'Managers / Supervisors', 'Customers / Clients', 'Vendors / Suppliers',
+      'Compliance team', 'IT / Security team', 'Finance team', 'Contractors',
+    ],
+    'chips-region': [
+      'United States', 'European Union', 'United Kingdom', 'Canada', 'Australia', 'India',
+      'United Arab Emirates', 'Saudi Arabia', 'Global / Multiple Regions',
+    ],
+    'chips-extra': [
+      'Must reference specific software/systems', 'Requires manager approval above a threshold',
+      'Must include an audit trail', 'Has a strict deadline/SLA',
+      'Involves handling sensitive/confidential data', 'Requires customer notification',
+    ],
+  };
+
+  populateTitleChips();
+
+  Object.entries(CHIP_OPTIONS).forEach(([rowId, options]) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    wireChipRow(row, options);
   });
 
   // ---------------------------------------------------------------------
@@ -196,6 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.assign(state, draft.state);
     stepIndex = Math.min(draft.stepIndex || 0, steps.length - 1);
     applyStateToInputs();
+    renderContextChip();
+    populateTitleChips();
     el.resumeBanner.hidden = true;
     renderStep();
   });
@@ -225,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.industry = '';
     state.mode = '';
     renderContextChip();
+    populateTitleChips();
     if (!steps.includes('industry')) steps.unshift('industry');
     stepIndex = 0;
     renderStep();
@@ -286,7 +362,10 @@ document.addEventListener('DOMContentLoaded', () => {
       el.status.className = 'form-status error';
       return;
     }
-    if (steps[stepIndex] === 'industry') renderContextChip();
+    if (steps[stepIndex] === 'industry') {
+      renderContextChip();
+      populateTitleChips();
+    }
     stepIndex = Math.min(stepIndex + 1, steps.length - 1);
     renderStep();
   });
@@ -492,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Single-hue magnitude bar chart for percentage-based KPI targets. Skipped
-  // when fewer than two targets are actually percentages — not enough for a
+  // when fewer than two targets are actually percentages: not enough for a
   // meaningful comparison, the table alone carries it.
   function renderKpiChart(kpis) {
     const withPct = (kpis || [])

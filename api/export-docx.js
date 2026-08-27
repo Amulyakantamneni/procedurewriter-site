@@ -2,6 +2,7 @@ import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, Header, Footer, PageNumber,
   TabStopType, TabStopPosition, VerticalAlign, TableOfContents,
+  PageBorderDisplay, PageBorderOffsetFrom, PageBorderZOrder,
 } from 'docx';
 
 const MAX_BODY_SIZE = 300000;
@@ -374,6 +375,17 @@ function buildDoc(p) {
       properties: {
         page: {
           margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 },
+          borders: {
+            pageBorders: {
+              display: PageBorderDisplay.ALL_PAGES,
+              offsetFrom: PageBorderOffsetFrom.PAGE,
+              zOrder: PageBorderZOrder.FRONT,
+            },
+            pageBorderTop: { style: BorderStyle.SINGLE, size: 10, color: NAVY, space: 18 },
+            pageBorderRight: { style: BorderStyle.SINGLE, size: 10, color: NAVY, space: 18 },
+            pageBorderBottom: { style: BorderStyle.SINGLE, size: 10, color: NAVY, space: 18 },
+            pageBorderLeft: { style: BorderStyle.SINGLE, size: 10, color: NAVY, space: 18 },
+          },
         },
       },
       headers: { default: buildHeader(title, docNumber, formatDate(new Date())) },

@@ -1,8 +1,9 @@
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, Header, Footer, PageNumber,
-  TabStopType, TabStopPosition, VerticalAlign, TableOfContents,
+  TabStopType, TabStopPosition, VerticalAlign,
   PageBorderDisplay, PageBorderOffsetFrom, PageBorderZOrder,
+  Bookmark, PageReference, LeaderType,
 } from 'docx';
 
 const MAX_BODY_SIZE = 300000;
@@ -47,6 +48,72 @@ function heading(text, level = HeadingLevel.HEADING_2, { pageBreakBefore = false
       ? { bottom: { style: BorderStyle.SINGLE, size: 6, color: level === HeadingLevel.HEADING_1 ? NAVY : BORDER, space: 4 } }
       : undefined,
   });
+}
+
+// Same as heading(), but wraps the run in a named Bookmark so the static table of
+// contents can point a real PAGEREF field at it.
+function bookmarkedHeading(text, level, bookmarkId, { pageBreakBefore = false } = {}) {
+  const sizes = { [HeadingLevel.HEADING_1]: 30, [HeadingLevel.HEADING_2]: 25, [HeadingLevel.HEADING_3]: 21 };
+  return new Paragraph({
+    heading: level,
+    pageBreakBefore,
+    spacing: { before: 340, after: 160 },
+    border: level !== HeadingLevel.HEADING_3
+      ? { bottom: { style: BorderStyle.SINGLE, size: 6, color: level === HeadingLevel.HEADING_1 ? NAVY : BORDER, space: 4 } }
+      : undefined,
+    children: [
+      new Bookmark({
+        id: bookmarkId,
+        children: [new TextRun({
+          text: String(text ?? ''), font: FONT, bold: true,
+          color: level === HeadingLevel.HEADING_3 ? GOLD : NAVY,
+          size: sizes[level] || 22,
+        })],
+      }),
+    ],
+  });
+}
+
+// A single always-visible TOC row: static title text with a dot leader to a real
+// PAGEREF field. The title never depends on a field being manually refreshed.
+function tocEntry(label, bookmarkId, { indent = false } = {}) {
+  return new Paragraph({
+    tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX, leader: LeaderType.DOT }],
+    indent: indent ? { left: 360 } : undefined,
+    spacing: { after: 100 },
+    children: [
+      new TextRun({ text: label, font: FONT, color: indent ? MUTED : NAVY_DARK, bold: !indent, size: indent ? 18 : 21 }),
+      new TextRun({ text: '\t', font: FONT, size: 19 }),
+      new PageReference(bookmarkId, { hyperlink: true }),
+    ],
+  });
+}
+
+// Builds the section outline once so the static TOC and the bookmarked headings
+// below it always agree on labels and bookmark ids, even for conditional sections.
+function buildOutline(p) {
+  const ids = {
+    purpose: 'sec_purpose', turtle: 'sec_turtle', scope: 'sec_scope', applicability: 'sec_applicability',
+    requirements: 'sec_requirements', definitions: 'sec_definitions', responsibilities: 'sec_responsibilities',
+    procedure: 'sec_procedure', kpis: 'sec_kpis', records: 'sec_records', references: 'sec_references',
+  };
+  const entries = [
+    { label: '1.0 Purpose', id: ids.purpose },
+    { label: '2.0 Process Turtle Diagram', id: ids.turtle },
+    { label: '3.0 Scope', id: ids.scope },
+    { label: '4.0 Applicability', id: ids.applicability },
+    { label: '5.0 Requirements', id: ids.requirements },
+  ];
+  if (p.definitions?.length) entries.push({ label: '6.0 Terms and Definitions', id: ids.definitions });
+  entries.push({ label: '7.0 Responsibilities', id: ids.responsibilities });
+  entries.push({ label: '8.0 Procedure', id: ids.procedure });
+  (p.procedure || []).forEach((sub, i) => {
+    entries.push({ label: `${sub.id} ${sub.title}`, id: `sec_proc_${i}`, indent: true });
+  });
+  if (p.kpis?.length) entries.push({ label: '9.0 Performance Indicators', id: ids.kpis });
+  if (p.records?.length) entries.push({ label: '10.0 Records', id: ids.records });
+  entries.push({ label: '11.0 References', id: ids.references });
+  return { ids, entries };
 }
 
 function sectionBar(text) {
@@ -369,16 +436,18 @@ function buildDoc(p) {
     ));
   }
 
-  children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
-  children.push(new TableOfContents('Table of Contents', { hyperlink: true, headingStyleRange: '1-3' }));
+  const { ids, entries } = buildOutline(p);
 
-  children.push(heading('1.0 Purpose', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
+  children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
+  for (const e of entries) children.push(tocEntry(e.label, e.id, { indent: e.indent }));
+
+  children.push(bookmarkedHeading('1.0 Purpose', HeadingLevel.HEADING_1, ids.purpose, { pageBreakBefore: true }));
   children.push(txt(p.purpose || ''));
 
-  children.push(heading('2.0 Process Turtle Diagram', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('2.0 Process Turtle Diagram', HeadingLevel.HEADING_1, ids.turtle));
   children.push(buildTurtleDiagram(p));
 
-  children.push(heading('3.0 Scope', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('3.0 Scope', HeadingLevel.HEADING_1, ids.scope));
   children.push(txt(p.scope?.summary || ''));
   children.push(txt(`Start: ${p.scope?.start || ''}`, { bold: true }));
   children.push(txt(`End: ${p.scope?.end || ''}`, { bold: true }));
@@ -387,10 +456,10 @@ function buildDoc(p) {
     children.push(...bullets(p.scope.exclusions));
   }
 
-  children.push(heading('4.0 Applicability', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('4.0 Applicability', HeadingLevel.HEADING_1, ids.applicability));
   children.push(txt(p.applicability || ''));
 
-  children.push(heading('5.0 Requirements', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('5.0 Requirements', HeadingLevel.HEADING_1, ids.requirements));
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
@@ -400,11 +469,11 @@ function buildDoc(p) {
   }
 
   if (p.definitions?.length) {
-    children.push(heading('6.0 Terms and Definitions', HeadingLevel.HEADING_1));
+    children.push(bookmarkedHeading('6.0 Terms and Definitions', HeadingLevel.HEADING_1, ids.definitions));
     children.push(table(['Term', 'Definition'], p.definitions.map((d) => [d.term, d.definition])));
   }
 
-  children.push(heading('7.0 Responsibilities', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('7.0 Responsibilities', HeadingLevel.HEADING_1, ids.responsibilities));
   for (const r of p.responsibilities || []) {
     children.push(heading(r.role, HeadingLevel.HEADING_3));
     children.push(...bullets(r.responsibilities));
@@ -417,9 +486,9 @@ function buildDoc(p) {
     ));
   }
 
-  children.push(heading('8.0 Procedure', HeadingLevel.HEADING_1));
-  for (const sub of p.procedure || []) {
-    children.push(heading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_2));
+  children.push(bookmarkedHeading('8.0 Procedure', HeadingLevel.HEADING_1, ids.procedure));
+  (p.procedure || []).forEach((sub, i) => {
+    children.push(bookmarkedHeading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_2, `sec_proc_${i}`));
     if (sub.objective) children.push(txt(`Objective: ${sub.objective}`));
     if (sub.trigger) children.push(txt(`Trigger: ${sub.trigger}`));
     if (sub.steps?.length) {
@@ -429,10 +498,10 @@ function buildDoc(p) {
       ));
     }
     if (sub.exceptions) children.push(txt(`Exceptions/Escalations: ${sub.exceptions}`, { italics: true }));
-  }
+  });
 
   if (p.kpis?.length) {
-    children.push(heading('9.0 Performance Indicators', HeadingLevel.HEADING_1));
+    children.push(bookmarkedHeading('9.0 Performance Indicators', HeadingLevel.HEADING_1, ids.kpis));
     children.push(table(
       ['Indicator', 'Description', 'Responsible Role', 'Target'],
       p.kpis.map((k) => [k.indicator, k.description, k.role, k.target]),
@@ -440,14 +509,14 @@ function buildDoc(p) {
   }
 
   if (p.records?.length) {
-    children.push(heading('10.0 Records', HeadingLevel.HEADING_1));
+    children.push(bookmarkedHeading('10.0 Records', HeadingLevel.HEADING_1, ids.records));
     children.push(table(
       ['Record Name', 'Form Number', 'Owner', 'Storage Location', 'Retention'],
       p.records.map((r) => [r.name, r.formNumber, r.owner, r.location, r.retention]),
     ));
   }
 
-  children.push(heading('11.0 References', HeadingLevel.HEADING_1));
+  children.push(bookmarkedHeading('11.0 References', HeadingLevel.HEADING_1, ids.references));
   children.push(...bullets(p.references));
 
   return new Document({

@@ -137,9 +137,27 @@ function buildHeader(title, docNumber, generatedDate) {
   });
 }
 
-// Nested header-bar + bulleted-body box used inside the turtle diagram grid.
-function turtleBox(headerText, items) {
+// Caps a list to `max` items so a turtle-diagram box never grows past a couple of lines.
+function capList(items, max = 3) {
   const list = uniq(items);
+  if (list.length <= max) return list;
+  return [...list.slice(0, max), `+ ${list.length - max} more`];
+}
+
+// Trims free text to a short, sentence-safe summary for the Activity box, never
+// pasting the full procedure in.
+function summarize(text, maxLen = 220) {
+  const clean = String(text || '').trim();
+  if (!clean) return '[To Be Confirmed]';
+  if (clean.length <= maxLen) return clean;
+  const cut = clean.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${cut.slice(0, lastSpace > 0 ? lastSpace : maxLen)}…`;
+}
+
+// Compact nested header-bar + bulleted-body box used inside the turtle diagram grid.
+function turtleBox(headerText, items) {
+  const list = capList(items);
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: {
@@ -153,23 +171,67 @@ function turtleBox(headerText, items) {
       new TableRow({
         children: [new TableCell({
           shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
-          margins: { top: 80, bottom: 80, left: 100, right: 100 },
+          margins: { top: 40, bottom: 40, left: 80, right: 80 },
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: headerText, font: FONT, bold: true, color: 'FFFFFF', size: 17 })],
+            children: [new TextRun({ text: headerText, font: FONT, bold: true, color: 'FFFFFF', size: 14 })],
           })],
         })],
       }),
       new TableRow({
         children: [new TableCell({
-          margins: { top: 100, bottom: 100, left: 120, right: 120 },
+          margins: { top: 50, bottom: 50, left: 90, right: 90 },
           children: list.length
             ? list.map((t) => new Paragraph({
               bullet: { level: 0 },
-              children: [new TextRun({ text: t, font: FONT, color: INK, size: 17 })],
-              spacing: { after: 40 },
+              children: [new TextRun({ text: t, font: FONT, color: INK, size: 15 })],
+              spacing: { after: 20 },
             }))
-            : [new Paragraph({ children: [new TextRun({ text: 'Not specified', font: FONT, color: MUTED, italics: true, size: 17 })] })],
+            : [new Paragraph({ children: [new TextRun({ text: '[To Be Confirmed]', font: FONT, color: MUTED, italics: true, size: 15 })] })],
+        })],
+      }),
+    ],
+  });
+}
+
+// The center box: a short, generated 1-3 sentence description of the process,
+// never the full procedure text.
+function activityBox(title, description) {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      left: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      right: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+    },
+    rows: [
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
+          margins: { top: 40, bottom: 40, left: 80, right: 80 },
+          children: [new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: 'ACTIVITY', font: FONT, bold: true, color: 'FFFFFF', size: 14 })],
+          })],
+        })],
+      }),
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT },
+          margins: { top: 70, bottom: 70, left: 120, right: 120 },
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 18 })],
+              spacing: { after: 40 },
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: description, font: FONT, color: INK, size: 15 })],
+            }),
+          ],
         })],
       }),
     ],
@@ -180,14 +242,25 @@ function turtleGridCell(box, { rowSpan, columnSpan } = {}) {
   return new TableCell({
     rowSpan,
     columnSpan,
-    margins: { top: 60, bottom: 60, left: 60, right: 60 },
+    margins: { top: 40, bottom: 40, left: 40, right: 40 },
     verticalAlign: VerticalAlign.CENTER,
     children: [box],
   });
 }
 
-// Turtle diagram: Input / Activity / Output flow flanked by With What, With Who,
-// How and With What Measure, derived from the procedure's own steps and KPIs.
+function arrowConnector(symbol) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    children: [new TextRun({ text: symbol, font: FONT, bold: true, color: NAVY, size: 24 })],
+  });
+}
+
+// Turtle diagram: Input -> Activity -> Output flow flanked by With What, With Who,
+// How and With What Measure, derived entirely from the procedure's own
+// responsibilities, requirements, steps and KPIs (never invented). Dedicated
+// connector rows carry the up/down arrows into Activity so the direction of flow
+// is explicit rather than implied by position alone, and every leg is capped to a
+// few items so the whole diagram stays compact.
 function buildTurtleDiagram(p) {
   const title = p.metadata?.title || 'Procedure';
   const allSteps = (p.procedure || []).flatMap((s) => s.steps || []);
@@ -195,12 +268,16 @@ function buildTurtleDiagram(p) {
   const outputs = uniq(allSteps.map((s) => s.output));
   const withWhat = uniq(allSteps.map((s) => s.system));
   const withWho = uniq([
-    ...allSteps.map((s) => s.role),
     ...(p.responsibilities || []).map((r) => r.role),
+    ...allSteps.map((s) => s.role),
   ]);
-  const how = uniq((p.procedure || []).map((s) => s.title));
+  const methods = uniq([
+    ...(p.requirements?.governance || []),
+    ...(p.requirements?.business || []),
+  ]);
+  const how = methods.length ? methods : uniq((p.procedure || []).map((s) => s.title));
   const howMeasured = uniq((p.kpis || []).map((k) => `${k.indicator}${k.target ? `: ${k.target}` : ''}`));
-  const activity = uniq([title, ...(p.procedure || []).map((s) => s.objective)]);
+  const description = summarize(p.purpose, 220);
 
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
@@ -211,16 +288,24 @@ function buildTurtleDiagram(p) {
     },
     rows: [
       new TableRow({ children: [
-        turtleGridCell(turtleBox('INPUT', inputs.length ? inputs : [p.scope?.start].filter(Boolean)), { rowSpan: 3 }),
+        turtleGridCell(turtleBox('INPUT  →', inputs.length ? inputs : [p.scope?.start].filter(Boolean)), { rowSpan: 5 }),
         turtleGridCell(turtleBox('WITH WHAT (Resources & Systems)', withWhat)),
         turtleGridCell(turtleBox('WITH WHO (People & Roles)', withWho)),
-        turtleGridCell(turtleBox('OUTPUT', outputs.length ? outputs : [p.scope?.end].filter(Boolean)), { rowSpan: 3 }),
+        turtleGridCell(turtleBox('→  OUTPUT', outputs.length ? outputs : [p.scope?.end].filter(Boolean)), { rowSpan: 5 }),
       ] }),
       new TableRow({ children: [
-        turtleGridCell(turtleBox('ACTIVITY', activity), { columnSpan: 2 }),
+        turtleGridCell(arrowConnector('↓')),
+        turtleGridCell(arrowConnector('↓')),
       ] }),
       new TableRow({ children: [
-        turtleGridCell(turtleBox('HOW (Method / Steps)', how)),
+        turtleGridCell(activityBox(title, description), { columnSpan: 2 }),
+      ] }),
+      new TableRow({ children: [
+        turtleGridCell(arrowConnector('↑')),
+        turtleGridCell(arrowConnector('↑')),
+      ] }),
+      new TableRow({ children: [
+        turtleGridCell(turtleBox('HOW (Methods & Standards)', how)),
         turtleGridCell(turtleBox('WITH WHAT MEASURE (KPIs)', howMeasured)),
       ] }),
     ],
@@ -366,6 +451,7 @@ function buildDoc(p) {
   children.push(...bullets(p.references));
 
   return new Document({
+    features: { updateFields: true },
     styles: {
       default: {
         document: { run: { font: FONT, size: 21, color: INK } },

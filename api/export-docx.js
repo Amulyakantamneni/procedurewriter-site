@@ -1,7 +1,7 @@
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, Header, Footer, PageNumber,
-  TabStopType, TabStopPosition, VerticalAlign,
+  TabStopType, TabStopPosition, VerticalAlign, TableOfContents,
 } from 'docx';
 
 const MAX_BODY_SIZE = 300000;
@@ -23,7 +23,15 @@ function txt(text, opts = {}) {
   });
 }
 
-function heading(text, level = HeadingLevel.HEADING_2) {
+function formatDate(d) {
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function uniq(arr) {
+  return [...new Set((arr || []).filter(Boolean).map((v) => String(v)))];
+}
+
+function heading(text, level = HeadingLevel.HEADING_2, { pageBreakBefore = false } = {}) {
   const sizes = { [HeadingLevel.HEADING_1]: 30, [HeadingLevel.HEADING_2]: 25, [HeadingLevel.HEADING_3]: 21 };
   return new Paragraph({
     children: [new TextRun({
@@ -32,10 +40,34 @@ function heading(text, level = HeadingLevel.HEADING_2) {
       size: sizes[level] || 22,
     })],
     heading: level,
+    pageBreakBefore,
     spacing: { before: 340, after: 160 },
     border: level !== HeadingLevel.HEADING_3
       ? { bottom: { style: BorderStyle.SINGLE, size: 6, color: level === HeadingLevel.HEADING_1 ? NAVY : BORDER, space: 4 } }
       : undefined,
+  });
+}
+
+function sectionBar(text) {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      left: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      right: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+    },
+    rows: [
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: GOLD, fill: GOLD },
+          margins: { top: 100, bottom: 100, left: 140, right: 140 },
+          children: [new Paragraph({
+            children: [new TextRun({ text: text.toUpperCase(), font: FONT, bold: true, color: NAVY_DARK, size: 20 })],
+          })],
+        })],
+      }),
+    ],
   });
 }
 
@@ -85,17 +117,111 @@ function table(headerCells, rows) {
   });
 }
 
-function buildHeader(title, docNumber) {
+function buildHeader(title, docNumber, generatedDate) {
   return new Header({
     children: [
       new Paragraph({
-        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+        tabStops: [
+          { type: TabStopType.CENTER, position: TabStopPosition.MAX / 2 },
+          { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+        ],
         border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: NAVY, space: 6 } },
         children: [
           new TextRun({ text: String(title || 'Procedure'), font: FONT, bold: true, color: NAVY, size: 18 }),
           new TextRun({ text: `\t${docNumber || ''}`, font: FONT, color: MUTED, size: 16 }),
+          new TextRun({ text: `\tEffective Date: ${generatedDate}`, font: FONT, color: MUTED, size: 16 }),
         ],
       }),
+    ],
+  });
+}
+
+// Nested header-bar + bulleted-body box used inside the turtle diagram grid.
+function turtleBox(headerText, items) {
+  const list = uniq(items);
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      left: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      right: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: NAVY },
+    },
+    rows: [
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
+          margins: { top: 80, bottom: 80, left: 100, right: 100 },
+          children: [new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: headerText, font: FONT, bold: true, color: 'FFFFFF', size: 17 })],
+          })],
+        })],
+      }),
+      new TableRow({
+        children: [new TableCell({
+          margins: { top: 100, bottom: 100, left: 120, right: 120 },
+          children: list.length
+            ? list.map((t) => new Paragraph({
+              bullet: { level: 0 },
+              children: [new TextRun({ text: t, font: FONT, color: INK, size: 17 })],
+              spacing: { after: 40 },
+            }))
+            : [new Paragraph({ children: [new TextRun({ text: 'Not specified', font: FONT, color: MUTED, italics: true, size: 17 })] })],
+        })],
+      }),
+    ],
+  });
+}
+
+function turtleGridCell(box, { rowSpan, columnSpan } = {}) {
+  return new TableCell({
+    rowSpan,
+    columnSpan,
+    margins: { top: 60, bottom: 60, left: 60, right: 60 },
+    verticalAlign: VerticalAlign.CENTER,
+    children: [box],
+  });
+}
+
+// Turtle diagram: Input / Activity / Output flow flanked by With What, With Who,
+// How and With What Measure, derived from the procedure's own steps and KPIs.
+function buildTurtleDiagram(p) {
+  const title = p.metadata?.title || 'Procedure';
+  const allSteps = (p.procedure || []).flatMap((s) => s.steps || []);
+  const inputs = uniq(allSteps.map((s) => s.input));
+  const outputs = uniq(allSteps.map((s) => s.output));
+  const withWhat = uniq(allSteps.map((s) => s.system));
+  const withWho = uniq([
+    ...allSteps.map((s) => s.role),
+    ...(p.responsibilities || []).map((r) => r.role),
+  ]);
+  const how = uniq((p.procedure || []).map((s) => s.title));
+  const howMeasured = uniq((p.kpis || []).map((k) => `${k.indicator}${k.target ? `: ${k.target}` : ''}`));
+  const activity = uniq([title, ...(p.procedure || []).map((s) => s.objective)]);
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE },
+    },
+    rows: [
+      new TableRow({ children: [
+        turtleGridCell(turtleBox('INPUT', inputs.length ? inputs : [p.scope?.start].filter(Boolean)), { rowSpan: 3 }),
+        turtleGridCell(turtleBox('WITH WHAT (Resources & Systems)', withWhat)),
+        turtleGridCell(turtleBox('WITH WHO (People & Roles)', withWho)),
+        turtleGridCell(turtleBox('OUTPUT', outputs.length ? outputs : [p.scope?.end].filter(Boolean)), { rowSpan: 3 }),
+      ] }),
+      new TableRow({ children: [
+        turtleGridCell(turtleBox('ACTIVITY', activity), { columnSpan: 2 }),
+      ] }),
+      new TableRow({ children: [
+        turtleGridCell(turtleBox('HOW (Method / Steps)', how)),
+        turtleGridCell(turtleBox('WITH WHAT MEASURE (KPIs)', howMeasured)),
+      ] }),
     ],
   });
 }
@@ -136,6 +262,7 @@ function buildDoc(p) {
     spacing: { after: 240 },
   }));
 
+  children.push(sectionBar('Document Information'));
   children.push(table(
     ['Field', 'Value'],
     [
@@ -148,17 +275,24 @@ function buildDoc(p) {
   ));
 
   if (p.revisionHistory?.length) {
-    children.push(heading('Revision History', HeadingLevel.HEADING_3));
+    children.push(txt('', { size: 2 }));
+    children.push(sectionBar('Revision History'));
     children.push(table(
       ['Revision', 'Date', 'Changes', 'Developer', 'Approver'],
       p.revisionHistory.map((r) => [r.revision, r.date, r.changes, r.developer, r.approver]),
     ));
   }
 
-  children.push(heading('1.0 Purpose', HeadingLevel.HEADING_1));
+  children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
+  children.push(new TableOfContents('Table of Contents', { hyperlink: true, headingStyleRange: '1-3' }));
+
+  children.push(heading('1.0 Purpose', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
   children.push(txt(p.purpose || ''));
 
-  children.push(heading('2.0 Scope', HeadingLevel.HEADING_1));
+  children.push(heading('2.0 Process Turtle Diagram', HeadingLevel.HEADING_1));
+  children.push(buildTurtleDiagram(p));
+
+  children.push(heading('3.0 Scope', HeadingLevel.HEADING_1));
   children.push(txt(p.scope?.summary || ''));
   children.push(txt(`Start: ${p.scope?.start || ''}`, { bold: true }));
   children.push(txt(`End: ${p.scope?.end || ''}`, { bold: true }));
@@ -167,10 +301,10 @@ function buildDoc(p) {
     children.push(...bullets(p.scope.exclusions));
   }
 
-  children.push(heading('3.0 Applicability', HeadingLevel.HEADING_1));
+  children.push(heading('4.0 Applicability', HeadingLevel.HEADING_1));
   children.push(txt(p.applicability || ''));
 
-  children.push(heading('4.0 Requirements', HeadingLevel.HEADING_1));
+  children.push(heading('5.0 Requirements', HeadingLevel.HEADING_1));
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
@@ -180,11 +314,11 @@ function buildDoc(p) {
   }
 
   if (p.definitions?.length) {
-    children.push(heading('5.0 Terms and Definitions', HeadingLevel.HEADING_1));
+    children.push(heading('6.0 Terms and Definitions', HeadingLevel.HEADING_1));
     children.push(table(['Term', 'Definition'], p.definitions.map((d) => [d.term, d.definition])));
   }
 
-  children.push(heading('6.0 Responsibilities', HeadingLevel.HEADING_1));
+  children.push(heading('7.0 Responsibilities', HeadingLevel.HEADING_1));
   for (const r of p.responsibilities || []) {
     children.push(heading(r.role, HeadingLevel.HEADING_3));
     children.push(...bullets(r.responsibilities));
@@ -197,7 +331,7 @@ function buildDoc(p) {
     ));
   }
 
-  children.push(heading('7.0 Procedure', HeadingLevel.HEADING_1));
+  children.push(heading('8.0 Procedure', HeadingLevel.HEADING_1));
   for (const sub of p.procedure || []) {
     children.push(heading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_2));
     if (sub.objective) children.push(txt(`Objective: ${sub.objective}`));
@@ -212,7 +346,7 @@ function buildDoc(p) {
   }
 
   if (p.kpis?.length) {
-    children.push(heading('8.0 Performance Indicators', HeadingLevel.HEADING_1));
+    children.push(heading('9.0 Performance Indicators', HeadingLevel.HEADING_1));
     children.push(table(
       ['Indicator', 'Description', 'Responsible Role', 'Target'],
       p.kpis.map((k) => [k.indicator, k.description, k.role, k.target]),
@@ -220,14 +354,14 @@ function buildDoc(p) {
   }
 
   if (p.records?.length) {
-    children.push(heading('9.0 Records', HeadingLevel.HEADING_1));
+    children.push(heading('10.0 Records', HeadingLevel.HEADING_1));
     children.push(table(
       ['Record Name', 'Form Number', 'Owner', 'Storage Location', 'Retention'],
       p.records.map((r) => [r.name, r.formNumber, r.owner, r.location, r.retention]),
     ));
   }
 
-  children.push(heading('10.0 References', HeadingLevel.HEADING_1));
+  children.push(heading('11.0 References', HeadingLevel.HEADING_1));
   children.push(...bullets(p.references));
 
   return new Document({
@@ -242,7 +376,7 @@ function buildDoc(p) {
           margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 },
         },
       },
-      headers: { default: buildHeader(title, docNumber) },
+      headers: { default: buildHeader(title, docNumber, formatDate(new Date())) },
       footers: { default: buildFooter('CONFIDENTIAL - INTERNAL USE ONLY') },
       children,
     }],

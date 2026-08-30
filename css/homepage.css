@@ -493,6 +493,50 @@
   .industry-tab.active { border-bottom-color: var(--teal-400); background: transparent; }
 }
 
+/* ---------- Compliance hub-and-spoke ---------- */
+.compliance-viz {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 720px;
+  margin: 56px auto 0;
+}
+
+.compliance-node {
+  padding: 18px 14px;
+  background: var(--bg-800);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-300);
+}
+
+.compliance-center {
+  grid-column: 1 / 4;
+  padding: 26px 20px;
+  background: var(--bg-700);
+  border: 2px solid var(--teal-400);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-000);
+  box-shadow: 0 0 0 6px rgba(203, 167, 101, 0.1);
+}
+
+.compliance-arrow {
+  text-align: center;
+  color: var(--text-500);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 700px) {
+  .compliance-viz { max-width: 320px; }
+  .compliance-node { font-size: 0.8rem; padding: 14px 8px; }
+}
+
 /* Scroll-reveal primitive: JS toggles .in-view; CSS-only fallback for no-JS */
 .reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal-up.in-view { opacity: 1; transform: translateY(0); }

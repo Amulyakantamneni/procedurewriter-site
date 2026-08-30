@@ -185,4 +185,20 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.addEventListener('click', (e) => { e.preventDefault(); setIndustry(tab.dataset.industry); });
     });
   }
+
+  // ---------------------------------------------------------------------
+  // Magnetic primary buttons: a subtle pull toward the cursor, desktop only
+  // ---------------------------------------------------------------------
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (canHover && !prefersReducedMotion) {
+    document.querySelectorAll('.hero-actions .btn-primary, .cta-band .btn-primary').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.18}px, ${y * 0.35 - 1}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
 });

@@ -355,11 +355,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (key === 'q6') state.extra = el.extraInput.value.trim();
   }
 
+  // Catches low-information answers ("yes", "everyone", "standard") so the
+  // wizard asks a contextual follow-up instead of generating a generic
+  // document from a non-answer. Longer free text is assumed to carry real
+  // content and is never flagged.
+  const GENERIC_ANSWER_RE = /^(yes|no|nothing|same|general(\s*(procedure|process))?|everything|everyone|all|standard(\s*(procedure|process|one))?|not\s*sure|whatever|anything|good|make\s*it\s*good|na|n\/a|none|ok|okay|idk|i\s*don'?t\s*know|all\s*customers|all\s*employees|all\s*users|all\s*staff)$/i;
+
+  function isGenericAnswer(text) {
+    const t = (text || '').trim().replace(/[.!]+$/, '');
+    if (!t || t.length > 40) return false;
+    return GENERIC_ANSWER_RE.test(t);
+  }
+
+  const CLARIFICATION_HINTS = {
+    q1: 'Give us a specific procedure name or type. For example:\n• Patient Intake & Registration\n• Equipment Maintenance Log\n• Vendor Onboarding',
+    q2: 'Tell us what you want this procedure to accomplish. For example:\n• Standardize how requests are handled\n• Reduce processing errors\n• Meet a regulatory requirement\n• Improve customer response time',
+    q3: 'Could you be more specific? For example:\n• Internal employees\n• External customers\n• Suppliers\n• Healthcare patients\n• Business clients\n• Government customers',
+    q5: "Tell us briefly how this is handled today, or use “We don't have an existing process.”",
+  };
+
   function validateCurrentStep() {
     const key = steps[stepIndex];
+    const value = { q1: state.title, q2: state.goal, q3: state.audience, q5: state.current }[key];
+
     if (key === 'q1' && !state.title) return "Tell us what procedure you'd like to create.";
     if (key === 'q2' && !state.goal) return 'Give a quick sense of the goal and what it should cover.';
     if (key === 'q5' && !state.current) return "Describe the current process, or use “We don't have an existing process.”";
+
+    if (CLARIFICATION_HINTS[key] && isGenericAnswer(value)) return CLARIFICATION_HINTS[key];
     return '';
   }
 

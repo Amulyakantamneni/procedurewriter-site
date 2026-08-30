@@ -907,7 +907,7 @@ form.contact-form {
 
 .form-note { font-size: 0.78rem; color: var(--text-500); margin-top: 14px; text-align: center; }
 
-.form-status { font-size: 0.88rem; margin-top: 14px; display: none; }
+.form-status { font-size: 0.88rem; margin-top: 14px; display: none; white-space: pre-line; line-height: 1.6; }
 .form-status.success { color: var(--teal-400); display: block; }
 .form-status.error { color: #f87171; display: block; }
 

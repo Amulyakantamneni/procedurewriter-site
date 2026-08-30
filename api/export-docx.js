@@ -89,8 +89,12 @@ function tocEntry(label, bookmarkId, { indent = false } = {}) {
   });
 }
 
-// Builds the section outline once so the static TOC and the bookmarked headings
-// below it always agree on labels and bookmark ids, even for conditional sections.
+// Builds the section outline once so the static TOC, the bookmarked headings,
+// and the sub-process numbers all agree, and section numbers are always
+// sequential with no gaps, regardless of which optional sections (Definitions,
+// KPIs, Records) are actually present in this particular document. The AI's
+// own sub.id guess (e.g. "7.1") assumes a fixed section count that varies per
+// document, so it is never trusted for display, only real, computed numbers.
 function buildOutline(p) {
   const ids = {
     purpose: 'sec_purpose', turtle: 'sec_turtle', scope: 'sec_scope', applicability: 'sec_applicability',
@@ -98,29 +102,48 @@ function buildOutline(p) {
     procedure: 'sec_procedure', kpis: 'sec_kpis', records: 'sec_records', references: 'sec_references',
     annexures: 'sec_annexures',
   };
+
+  let n = 0;
+  const next = () => { n += 1; return n; };
+  const nums = {
+    purpose: next(),
+    turtle: next(),
+    scope: next(),
+    applicability: next(),
+    requirements: next(),
+    definitions: p.definitions?.length ? next() : null,
+    responsibilities: next(),
+    procedure: next(),
+    kpis: p.kpis?.length ? next() : null,
+    records: p.records?.length ? next() : null,
+    references: next(),
+  };
+
   const entries = [
-    { label: '1.0 Purpose', id: ids.purpose },
-    { label: '2.0 Process Turtle Diagram', id: ids.turtle },
-    { label: '3.0 Scope', id: ids.scope },
-    { label: '4.0 Applicability', id: ids.applicability },
-    { label: '5.0 Requirements', id: ids.requirements },
+    { label: `${nums.purpose}.0 Purpose`, id: ids.purpose },
+    { label: `${nums.turtle}.0 Process Turtle Diagram`, id: ids.turtle },
+    { label: `${nums.scope}.0 Scope`, id: ids.scope },
+    { label: `${nums.applicability}.0 Applicability`, id: ids.applicability },
+    { label: `${nums.requirements}.0 Requirements`, id: ids.requirements },
   ];
-  if (p.definitions?.length) entries.push({ label: '6.0 Terms and Definitions', id: ids.definitions });
-  entries.push({ label: '7.0 Responsibilities', id: ids.responsibilities });
-  entries.push({ label: '8.0 Procedure', id: ids.procedure });
-  (p.procedure || []).forEach((sub, i) => {
-    entries.push({ label: `${sub.id} ${sub.title}`, id: `sec_proc_${i}`, indent: true });
+  if (nums.definitions) entries.push({ label: `${nums.definitions}.0 Terms and Definitions`, id: ids.definitions });
+  entries.push({ label: `${nums.responsibilities}.0 Responsibilities`, id: ids.responsibilities });
+  entries.push({ label: `${nums.procedure}.0 Procedure`, id: ids.procedure });
+  const subLabels = (p.procedure || []).map((sub, i) => {
+    const label = `${nums.procedure}.${i + 1} ${sub.title}`;
+    entries.push({ label, id: `sec_proc_${i}`, indent: true });
+    return label;
   });
-  if (p.kpis?.length) entries.push({ label: '9.0 Performance Indicators', id: ids.kpis });
-  if (p.records?.length) entries.push({ label: '10.0 Records', id: ids.records });
-  entries.push({ label: '11.0 References', id: ids.references });
+  if (nums.kpis) entries.push({ label: `${nums.kpis}.0 Performance Indicators`, id: ids.kpis });
+  if (nums.records) entries.push({ label: `${nums.records}.0 Records`, id: ids.records });
+  entries.push({ label: `${nums.references}.0 References`, id: ids.references });
   if (p.annexures?.length) {
     entries.push({ label: 'Annexures', id: ids.annexures });
     p.annexures.forEach((a, i) => {
       entries.push({ label: `Annexure ${a.letter} - ${a.title}`, id: `sec_annex_${i}`, indent: true });
     });
   }
-  return { ids, entries };
+  return { ids, nums, entries, subLabels };
 }
 
 function sectionBar(text) {
@@ -596,50 +619,26 @@ function buildDoc(p) {
   const title = p.metadata?.title || 'Procedure';
   const docNumber = p.metadata?.documentNumber || '';
 
-  // --- Page 1: Cover ---
-  children.push(txt('', { size: 2 }));
-  children.push(txt('', { size: 2 }));
-  children.push(txt('', { size: 2 }));
+  // --- Page 1: Cover + Document Control combined, so the page is never
+  // left mostly blank the way a title-only cover page would be. ---
   children.push(new Paragraph({
     border: { bottom: { style: BorderStyle.SINGLE, size: 16, color: GOLD, space: 14 } },
-    spacing: { after: 280 },
+    spacing: { after: 200 },
     children: [new TextRun({ text: 'CONTROLLED DOCUMENT', font: FONT, bold: true, color: GOLD, size: 18 })],
   }));
   children.push(new Paragraph({
-    children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 60 })],
-    spacing: { after: 100 },
-  }));
-  children.push(new Paragraph({
-    children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: NAVY, bold: true, size: 24 })],
-    spacing: { after: 700 },
-  }));
-  children.push(new Paragraph({
-    children: [
-      new TextRun({ text: 'Document Number  ', font: FONT, color: MUTED, size: 19 }),
-      new TextRun({ text: docNumber, font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
-    ],
+    children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 48 })],
     spacing: { after: 80 },
   }));
   children.push(new Paragraph({
-    children: [
-      new TextRun({ text: 'Revision  ', font: FONT, color: MUTED, size: 19 }),
-      new TextRun({ text: p.metadata?.revisionNumber || '', font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
-    ],
-    spacing: { after: 80 },
+    children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: NAVY, bold: true, size: 22 })],
+    spacing: { after: 60 },
   }));
   children.push(new Paragraph({
-    children: [
-      new TextRun({ text: 'Effective Date  ', font: FONT, color: MUTED, size: 19 }),
-      new TextRun({ text: p.metadata?.effectiveDate || '', font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
-    ],
-    spacing: { after: 700 },
-  }));
-  children.push(new Paragraph({
-    children: [new TextRun({ text: 'CONFIDENTIAL - INTERNAL USE ONLY', font: FONT, bold: true, color: MUTED, size: 16 })],
+    children: [new TextRun({ text: 'CONFIDENTIAL - INTERNAL USE ONLY', font: FONT, bold: true, color: MUTED, size: 15 })],
+    spacing: { after: 280 },
   }));
 
-  // --- Page 2: Document Control ---
-  children.push(heading('Document Control', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
   children.push(sectionBar('Document Information'));
   children.push(table(
     ['Field', 'Value'],
@@ -663,25 +662,29 @@ function buildDoc(p) {
 
   // --- Table of Contents: flows naturally after Document Control (no forced
   // break here) so a short document never leaves a near-empty page behind. ---
-  const { ids, entries } = buildOutline(p);
+  const { ids, nums, entries, subLabels } = buildOutline(p);
+  let figureNum = 0;
+  const figureCaption = (text) => {
+    figureNum += 1;
+    return new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 140, after: 200 },
+      children: [new TextRun({ text: `Figure ${figureNum}. ${text}`, font: FONT, italics: true, color: MUTED, size: 16 })],
+    });
+  };
 
-  children.push(txt('', { size: 2 }));
   children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
   for (const e of entries) children.push(tocEntry(e.label, e.id, { indent: e.indent }));
 
-  children.push(bookmarkedHeading('1.0 Purpose', HeadingLevel.HEADING_1, ids.purpose, { pageBreakBefore: true }));
+  children.push(bookmarkedHeading(`${nums.purpose}.0 Purpose`, HeadingLevel.HEADING_1, ids.purpose, { pageBreakBefore: true }));
   children.push(txt(p.purpose || ''));
 
-  children.push(bookmarkedHeading('2.0 Process Turtle Diagram', HeadingLevel.HEADING_1, ids.turtle));
+  children.push(bookmarkedHeading(`${nums.turtle}.0 Process Turtle Diagram`, HeadingLevel.HEADING_1, ids.turtle));
   children.push(txt('A structured view of this procedure showing what feeds into it, what it produces, and how it is executed and measured.'));
   children.push(buildTurtleDiagram(p));
-  children.push(new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { before: 140 },
-    children: [new TextRun({ text: `Figure 1. Process Turtle Diagram for ${title}`, font: FONT, italics: true, color: MUTED, size: 16 })],
-  }));
+  children.push(figureCaption(`Process Turtle Diagram for ${title}`));
 
-  children.push(bookmarkedHeading('3.0 Scope', HeadingLevel.HEADING_1, ids.scope));
+  children.push(bookmarkedHeading(`${nums.scope}.0 Scope`, HeadingLevel.HEADING_1, ids.scope));
   children.push(txt(p.scope?.summary || ''));
   children.push(txt(`Start: ${p.scope?.start || ''}`, { bold: true }));
   children.push(txt(`End: ${p.scope?.end || ''}`, { bold: true }));
@@ -690,10 +693,10 @@ function buildDoc(p) {
     children.push(...bullets(p.scope.exclusions));
   }
 
-  children.push(bookmarkedHeading('4.0 Applicability', HeadingLevel.HEADING_1, ids.applicability));
+  children.push(bookmarkedHeading(`${nums.applicability}.0 Applicability`, HeadingLevel.HEADING_1, ids.applicability));
   children.push(txt(p.applicability || ''));
 
-  children.push(bookmarkedHeading('5.0 Requirements', HeadingLevel.HEADING_1, ids.requirements));
+  children.push(bookmarkedHeading(`${nums.requirements}.0 Requirements`, HeadingLevel.HEADING_1, ids.requirements));
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
@@ -703,11 +706,11 @@ function buildDoc(p) {
   }
 
   if (p.definitions?.length) {
-    children.push(bookmarkedHeading('6.0 Terms and Definitions', HeadingLevel.HEADING_1, ids.definitions));
+    children.push(bookmarkedHeading(`${nums.definitions}.0 Terms and Definitions`, HeadingLevel.HEADING_1, ids.definitions));
     children.push(table(['Term', 'Definition'], p.definitions.map((d) => [d.term, d.definition])));
   }
 
-  children.push(bookmarkedHeading('7.0 Responsibilities', HeadingLevel.HEADING_1, ids.responsibilities));
+  children.push(bookmarkedHeading(`${nums.responsibilities}.0 Responsibilities`, HeadingLevel.HEADING_1, ids.responsibilities));
   for (const r of p.responsibilities || []) {
     children.push(heading(r.role, HeadingLevel.HEADING_3));
     children.push(...bullets(r.responsibilities));
@@ -720,19 +723,15 @@ function buildDoc(p) {
     ));
   }
 
-  children.push(bookmarkedHeading('8.0 Procedure', HeadingLevel.HEADING_1, ids.procedure));
+  children.push(bookmarkedHeading(`${nums.procedure}.0 Procedure`, HeadingLevel.HEADING_1, ids.procedure));
   (p.procedure || []).forEach((sub, i) => {
-    children.push(bookmarkedHeading(`${sub.id} ${sub.title}`, HeadingLevel.HEADING_2, `sec_proc_${i}`));
+    children.push(bookmarkedHeading(subLabels[i], HeadingLevel.HEADING_2, `sec_proc_${i}`));
     if (sub.objective) children.push(txt(`Objective: ${sub.objective}`));
     if (sub.trigger) children.push(txt(`Trigger: ${sub.trigger}`));
     if (sub.steps?.length) {
       children.push(heading('Process Flow', HeadingLevel.HEADING_3));
       children.push(...buildProcessFlowchart(sub));
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 100, after: 240 },
-        children: [new TextRun({ text: `Figure. Process Flow for ${sub.id} ${sub.title}`, font: FONT, italics: true, color: MUTED, size: 16 })],
-      }));
+      children.push(figureCaption(`Process Flow for ${subLabels[i]}`));
       children.push(heading('Step Detail', HeadingLevel.HEADING_3));
       children.push(table(
         ['Step', 'Action', 'Role', 'Input', 'Output', 'Control', 'Record', 'Approval'],
@@ -747,7 +746,7 @@ function buildDoc(p) {
   });
 
   if (p.kpis?.length) {
-    children.push(bookmarkedHeading('9.0 Performance Indicators', HeadingLevel.HEADING_1, ids.kpis));
+    children.push(bookmarkedHeading(`${nums.kpis}.0 Performance Indicators`, HeadingLevel.HEADING_1, ids.kpis));
     const kpiChart = buildKpiChart(p.kpis);
     if (kpiChart) {
       children.push(heading('Performance Targets', HeadingLevel.HEADING_3));
@@ -761,14 +760,14 @@ function buildDoc(p) {
   }
 
   if (p.records?.length) {
-    children.push(bookmarkedHeading('10.0 Records', HeadingLevel.HEADING_1, ids.records));
+    children.push(bookmarkedHeading(`${nums.records}.0 Records`, HeadingLevel.HEADING_1, ids.records));
     children.push(table(
       ['Record Name', 'Form Number', 'Owner', 'Storage Location', 'Retention'],
       p.records.map((r) => [r.name, r.formNumber, r.owner, r.location, r.retention]),
     ));
   }
 
-  children.push(bookmarkedHeading('11.0 References', HeadingLevel.HEADING_1, ids.references));
+  children.push(bookmarkedHeading(`${nums.references}.0 References`, HeadingLevel.HEADING_1, ids.references));
   children.push(...bullets(p.references));
 
   if (p.annexures?.length) {

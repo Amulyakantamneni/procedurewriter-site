@@ -271,17 +271,17 @@
     <div class="context-photo reveal-up">
       <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=960&h=440&q=80" alt="Legal and compliance documents on a desk" loading="lazy" width="960" height="440">
     </div>
-    <div class="compliance-viz">
+    <div class="compliance-viz" id="compliance-viz">
       <div class="compliance-node">ISO Standards</div>
       <div class="compliance-node">Regulations</div>
       <div class="compliance-node">Standards</div>
-      <div class="compliance-arrow">↓</div>
-      <div class="compliance-arrow">↓</div>
-      <div class="compliance-arrow">↓</div>
+      <div class="compliance-connector"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
+      <div class="compliance-connector"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
+      <div class="compliance-connector"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
       <div class="compliance-center">Your Procedure</div>
-      <div class="compliance-arrow">↑</div>
-      <div class="compliance-arrow">↑</div>
-      <div class="compliance-arrow">↑</div>
+      <div class="compliance-connector up"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
+      <div class="compliance-connector up"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
+      <div class="compliance-connector up"><span class="compliance-line"></span><span class="compliance-dot"></span></div>
       <div class="compliance-node">Policies</div>
       <div class="compliance-node">Controls</div>
       <div class="compliance-node">Audit Requirements</div>
@@ -399,7 +399,11 @@
         </div>
         <div class="wow-stage" data-stage="7">
           <p class="wow-stage-label">9.0 Performance Indicators</p>
-          <div class="wow-kpi-badges"><span>100%</span><span>95%</span><span>0 incidents</span></div>
+          <div class="wow-kpi-badges">
+            <span class="count-up" data-count="100" data-suffix="%">0%</span>
+            <span class="count-up" data-count="95" data-suffix="%">0%</span>
+            <span>0 incidents</span>
+          </div>
         </div>
         <div class="wow-stage" data-stage="8">
           <p class="wow-stage-label">Annexures</p>

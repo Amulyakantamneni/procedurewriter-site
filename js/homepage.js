@@ -103,6 +103,71 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------------
+  // Blur-to-sharp reveal for full-bleed context photos
+  // ---------------------------------------------------------------------
+  const contextPhotos = document.querySelectorAll('.context-photo img');
+  if (contextPhotos.length) {
+    const io8 = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('sharp');
+          io8.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    contextPhotos.forEach((img) => io8.observe(img));
+  }
+
+  // ---------------------------------------------------------------------
+  // Number count-up for KPI badges
+  // ---------------------------------------------------------------------
+  const countEls = document.querySelectorAll('.count-up');
+  if (countEls.length) {
+    const animateCount = (el) => {
+      const target = parseInt(el.dataset.count, 10) || 0;
+      const suffix = el.dataset.suffix || '';
+      if (prefersReducedMotion) {
+        el.textContent = `${target}${suffix}`;
+        return;
+      }
+      const duration = 900;
+      const start = performance.now();
+      const tick = (now) => {
+        const progress = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = `${Math.round(target * eased)}${suffix}`;
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io7 = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animateCount(entry.target);
+          io7.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.6 });
+    countEls.forEach((el) => io7.observe(el));
+  }
+
+  // ---------------------------------------------------------------------
+  // Compliance network: draw all connecting lines in once scrolled into view
+  // ---------------------------------------------------------------------
+  const complianceViz = document.getElementById('compliance-viz');
+  if (complianceViz) {
+    const io6 = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('lit');
+          io6.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    io6.observe(complianceViz);
+  }
+
+  // ---------------------------------------------------------------------
   // Signature moment: build the mock document up as each stage scrolls
   // into view, culminating in a "Complete" badge on the final stage.
   // ---------------------------------------------------------------------

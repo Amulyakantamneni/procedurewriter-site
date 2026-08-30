@@ -70,33 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------------
-  // Turtle diagram: light up each node/arrow in sequence once in view
-  // ---------------------------------------------------------------------
-  const turtleViz = document.getElementById('turtle-viz');
-  if (turtleViz) {
-    const sequenceSelectors = [
-      '.turtle-input', '.ta1', '.ta2', '.turtle-what', '.turtle-who',
-      '.turtle-activity', '.ta3', '.ta4', '.turtle-how', '.turtle-measure', '.turtle-output',
-    ];
-    const io4 = new IntersectionObserver((entries, obs) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        sequenceSelectors.forEach((sel, i) => {
-          const el = turtleViz.querySelector(sel);
-          if (!el) return;
-          if (prefersReducedMotion) {
-            el.classList.add('lit');
-          } else {
-            setTimeout(() => el.classList.add('lit'), i * 160);
-          }
-        });
-        obs.unobserve(entry.target);
-      });
-    }, { threshold: 0.35 });
-    io4.observe(turtleViz);
-  }
-
-  // ---------------------------------------------------------------------
   // Signature moment: build the mock document up as each stage scrolls
   // into view, culminating in a "Complete" badge on the final stage.
   // ---------------------------------------------------------------------
@@ -186,9 +159,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------------
-  // Magnetic primary buttons: a subtle pull toward the cursor, desktop only
+  // Hero 3D ring: mouse-tilt the stage on top of its own continuous spin
   // ---------------------------------------------------------------------
   const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const heroStage = document.getElementById('hero-3d-stage');
+  const heroWrap = document.querySelector('.hero-3d-wrap');
+  if (heroStage && heroWrap && canHover && !prefersReducedMotion) {
+    heroWrap.addEventListener('mousemove', (e) => {
+      const rect = heroWrap.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      heroStage.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg)`;
+    });
+    heroWrap.addEventListener('mouseleave', () => { heroStage.style.transform = ''; });
+  }
+
+  // ---------------------------------------------------------------------
+  // Magnetic primary buttons: a subtle pull toward the cursor, desktop only
+  // ---------------------------------------------------------------------
   if (canHover && !prefersReducedMotion) {
     document.querySelectorAll('.hero-actions .btn-primary, .cta-band .btn-primary').forEach((btn) => {
       btn.addEventListener('mousemove', (e) => {

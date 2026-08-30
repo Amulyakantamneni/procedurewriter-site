@@ -1,12 +1,11 @@
-// Homepage-only interactions. Loaded after main.js, after GSAP + ScrollTrigger
-// (CDN, guarded everywhere in case the CDN is blocked or slow: the page must
-// never depend on it for basic usability).
+// Homepage-only interactions. Loaded after main.js. Everything here uses
+// plain IntersectionObserver/CSS transitions rather than a scroll animation
+// library: same visual result, no extra dependency weight, nothing that can
+// silently fail if a CDN is slow or blocked.
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.remove('no-js');
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
-  if (hasGsap) window.gsap.registerPlugin(window.ScrollTrigger);
 
   // ---------------------------------------------------------------------
   // Hero headline: word-by-word reveal on load

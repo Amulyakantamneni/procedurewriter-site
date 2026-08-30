@@ -5,6 +5,11 @@
    redefining them.
    ========================================================================== */
 
+/* .context-photo below intentionally breaks out to 100vw for a full-bleed
+   look; guard against the sub-pixel horizontal scrollbar that trick can
+   introduce in some browsers. */
+body { overflow-x: hidden; }
+
 /* ---------- Hero: word-by-word headline reveal ---------- */
 .hero-line { display: block; }
 .hw {
@@ -116,18 +121,20 @@
   .hero-3d-stage { transition: none; }
 }
 
-/* ---------- Small supporting photo beneath a section head ---------- */
+/* ---------- Full-bleed supporting photo beneath a section head ---------- */
 .context-photo {
-  max-width: 620px;
-  margin: 0 auto 40px;
-  border-radius: var(--radius-lg);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-bottom: 40px;
   overflow: hidden;
-  border: 1px solid var(--border-700);
+  border-top: 1px solid var(--border-700);
+  border-bottom: 1px solid var(--border-700);
 }
-.context-photo img { width: 100%; height: 220px; object-fit: cover; display: block; }
+.context-photo img { width: 100%; height: 360px; object-fit: cover; display: block; }
 
 @media (max-width: 700px) {
-  .context-photo img { height: 160px; }
+  .context-photo img { height: 220px; }
 }
 
 /* ---------- Section rhythm: technical labels + alternating environments ---------- */

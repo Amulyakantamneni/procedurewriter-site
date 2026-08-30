@@ -52,4 +52,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.3 });
     io2.observe(clarityList);
   }
+
+  // ---------------------------------------------------------------------
+  // Process flow: activate each stage as it's scrolled into view, and fill
+  // the connecting line proportionally. Works with or without GSAP.
+  // ---------------------------------------------------------------------
+  const flowStages = document.querySelectorAll('#process-flow .process-flow-stage');
+  const flowFill = document.getElementById('process-flow-fill');
+  if (flowStages.length && flowFill) {
+    const io3 = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('active');
+      });
+      const activeCount = document.querySelectorAll('#process-flow .process-flow-stage.active').length;
+      flowFill.style.height = `${(activeCount / flowStages.length) * 100}%`;
+    }, { threshold: 0.5, rootMargin: '0px 0px -15% 0px' });
+    flowStages.forEach((s) => io3.observe(s));
+  }
+
+  // ---------------------------------------------------------------------
+  // Turtle diagram: light up each node/arrow in sequence once in view
+  // ---------------------------------------------------------------------
+  const turtleViz = document.getElementById('turtle-viz');
+  if (turtleViz) {
+    const sequenceSelectors = [
+      '.turtle-input', '.ta1', '.ta2', '.turtle-what', '.turtle-who',
+      '.turtle-activity', '.ta3', '.ta4', '.turtle-how', '.turtle-measure', '.turtle-output',
+    ];
+    const io4 = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        sequenceSelectors.forEach((sel, i) => {
+          const el = turtleViz.querySelector(sel);
+          if (!el) return;
+          if (prefersReducedMotion) {
+            el.classList.add('lit');
+          } else {
+            setTimeout(() => el.classList.add('lit'), i * 160);
+          }
+        });
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.35 });
+    io4.observe(turtleViz);
+  }
 });

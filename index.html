@@ -198,33 +198,37 @@
   </div>
 </section>
 
-<section style="background:var(--bg-900); border-top:1px solid var(--border-700); border-bottom:1px solid var(--border-700);">
+<section class="env-panel process-flow-section">
   <div class="container">
-    <div class="section-head center">
-      <p class="eyebrow">Process</p>
-      <h2>From messy process to signed-off SOP in four steps</h2>
+    <div class="section-head center reveal-up">
+      <p class="tech-label">How It Works</p>
+      <h2>From a blank page to a controlled document</h2>
     </div>
-    <div class="steps-grid">
-      <div class="step">
-        <div class="step-num">Step 01</div>
-        <h3>Discovery Call</h3>
-        <p>We walk through your existing process, documentation gaps, and the regulations you're held to.</p>
+    <div class="process-flow" id="process-flow">
+      <div class="process-flow-line" aria-hidden="true"><div class="process-flow-line-fill" id="process-flow-fill"></div></div>
+      <div class="process-flow-stage">
+        <div class="process-flow-dot">01</div>
+        <div class="process-flow-body"><h3>Tell us what you do</h3><p>Answer a handful of plain-language questions about the process, who it's for, and where it runs.</p></div>
       </div>
-      <div class="step">
-        <div class="step-num">Step 02</div>
-        <h3>AI-Assisted Draft</h3>
-        <p>We generate a structured first draft from your notes, recordings, or existing documents.</p>
+      <div class="process-flow-stage">
+        <div class="process-flow-dot">02</div>
+        <div class="process-flow-body"><h3>We structure the procedure</h3><p>Purpose, scope, applicability, requirements, and responsibilities get built from your answers, not a generic template.</p></div>
       </div>
-      <div class="step">
-        <div class="step-num">Step 03</div>
-        <h3>Expert Review</h3>
-        <p>A reviewer checks the draft against your regulatory requirements and how the work actually happens.</p>
+      <div class="process-flow-stage">
+        <div class="process-flow-dot">03</div>
+        <div class="process-flow-body"><h3>We build the visuals</h3><p>A process flow diagram and a turtle diagram get generated directly from your procedure's own steps and roles.</p></div>
       </div>
-      <div class="step">
-        <div class="step-num">Step 04</div>
-        <h3>Delivery &amp; Rollout</h3>
-        <p>You get a version-controlled document, ready to publish to your team or QMS.</p>
+      <div class="process-flow-stage">
+        <div class="process-flow-dot">04</div>
+        <div class="process-flow-body"><h3>We assemble the document</h3><p>Table of contents, KPIs, records, references, and annexures, all in a formatted, controlled-document layout.</p></div>
       </div>
+      <div class="process-flow-stage">
+        <div class="process-flow-dot">05</div>
+        <div class="process-flow-body"><h3>You review and download</h3><p>Read it in the browser, edit anything that's off, then export a real DOCX or PDF ready to circulate.</p></div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:44px;">
+      <a href="generate.html" class="btn btn-primary">Create a Procedure</a>
     </div>
   </div>
 </section>
@@ -238,6 +242,30 @@
         <p>Every AI-generated draft is checked line by line against your regulatory requirements before it reaches you.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="env-blueprint">
+  <div class="container">
+    <div class="section-head center reveal-up">
+      <p class="tech-label">Process Engineering</p>
+      <h2>Every procedure maps to a turtle diagram</h2>
+      <p>The same audit tool quality teams already use, built automatically from your procedure's own steps, roles, and controls, not drawn by hand.</p>
+    </div>
+    <div class="turtle-viz" id="turtle-viz">
+      <div class="turtle-node turtle-input"><span class="turtle-label">Input</span><span class="turtle-example">Customer request, prior records</span></div>
+      <div class="turtle-node turtle-what"><span class="turtle-label">With What</span><span class="turtle-example">Systems &amp; tools</span></div>
+      <div class="turtle-node turtle-who"><span class="turtle-label">With Who</span><span class="turtle-example">Named roles</span></div>
+      <div class="turtle-node turtle-output"><span class="turtle-label">Output</span><span class="turtle-example">Completed record, audit trail</span></div>
+      <div class="turtle-arrow ta1">↓</div>
+      <div class="turtle-arrow ta2">↓</div>
+      <div class="turtle-node turtle-activity"><span class="turtle-label">Activity</span><span class="turtle-example">Your procedure, defined</span></div>
+      <div class="turtle-arrow ta3">↑</div>
+      <div class="turtle-arrow ta4">↑</div>
+      <div class="turtle-node turtle-how"><span class="turtle-label">How</span><span class="turtle-example">Documented method</span></div>
+      <div class="turtle-node turtle-measure"><span class="turtle-label">With What Measure</span><span class="turtle-example">KPIs &amp; targets</span></div>
+    </div>
+    <p class="turtle-caption reveal-up">This is what a process looks like once it's actually understood.</p>
   </div>
 </section>
 

@@ -8,6 +8,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---------------------------------------------------------------------
+  // Scroll progress indicator
+  // ---------------------------------------------------------------------
+  const progressFill = document.getElementById('scroll-progress-fill');
+  if (progressFill) {
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+      progressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+    };
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+  }
+
+  // ---------------------------------------------------------------------
+  // Cursor-following spotlight (desktop, fine pointer, motion allowed only)
+  // ---------------------------------------------------------------------
+  const spotlight = document.getElementById('cursor-spotlight');
+  const spotlightOk = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (spotlight && spotlightOk && !prefersReducedMotion) {
+    let raf = null;
+    document.addEventListener('mousemove', (e) => {
+      spotlight.classList.add('active');
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        spotlight.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+        raf = null;
+      });
+    });
+    document.addEventListener('mouseleave', () => spotlight.classList.remove('active'));
+  }
+
+  // ---------------------------------------------------------------------
   // Hero headline: word-by-word reveal on load
   // ---------------------------------------------------------------------
   const words = document.querySelectorAll('#hero-headline .hw');

@@ -10,6 +10,49 @@
    introduce in some browsers. */
 body { overflow-x: hidden; }
 
+/* ---------- Scroll progress indicator ---------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 200;
+  background: transparent;
+  pointer-events: none;
+}
+.scroll-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--indigo-400), var(--teal-400));
+}
+
+/* ---------- Cursor-following spotlight ---------- */
+.cursor-spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 520px;
+  height: 520px;
+  margin-left: -260px;
+  margin-top: -260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 140, 245, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  will-change: transform;
+}
+.cursor-spotlight.active { opacity: 1; }
+
+@media (hover: none), (pointer: coarse) {
+  .cursor-spotlight { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-fill { transition: none; }
+}
+
 /* ---------- Hero: word-by-word headline reveal ---------- */
 .hero-line { display: block; }
 .hw {
@@ -39,27 +82,27 @@ body { overflow-x: hidden; }
 /* ---------- Hero: 3D rotating document ring ---------- */
 .hero-3d-wrap {
   position: relative;
-  height: 460px;
+  height: 580px;
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 1600px;
+  perspective: 2000px;
 }
 
 .hero-3d-glow {
   position: absolute;
-  bottom: 20px;
-  width: 300px;
-  height: 60px;
-  background: radial-gradient(ellipse, rgba(203, 167, 101, 0.28) 0%, transparent 72%);
-  filter: blur(6px);
+  bottom: 30px;
+  width: 440px;
+  height: 100px;
+  background: radial-gradient(ellipse, rgba(203, 167, 101, 0.38) 0%, rgba(124, 140, 245, 0.12) 45%, transparent 75%);
+  filter: blur(10px);
 }
 
 .hero-3d-stage {
   position: relative;
-  width: 320px;
-  height: 300px;
-  perspective: 1400px;
+  width: 440px;
+  height: 400px;
+  perspective: 1900px;
   transition: transform 0.2s ease-out;
   will-change: transform;
 }
@@ -79,41 +122,47 @@ body { overflow-x: hidden; }
 .hero-3d-face {
   position: absolute;
   inset: 0;
-  padding: 26px 24px;
-  background: var(--bg-900);
+  padding: 34px 30px;
+  background: linear-gradient(160deg, var(--bg-800) 0%, var(--bg-900) 55%, var(--bg-950) 100%);
   border: 1px solid var(--border-700);
   border-radius: var(--radius-lg);
-  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 40px rgba(124, 140, 245, 0.05),
+    0 40px 90px -30px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(203, 167, 101, 0.08);
   backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 14px;
+  gap: 18px;
 }
 
-.face-1 { transform: rotateY(0deg) translateZ(160px); }
-.face-2 { transform: rotateY(90deg) translateZ(160px); }
-.face-3 { transform: rotateY(180deg) translateZ(160px); }
-.face-4 { transform: rotateY(270deg) translateZ(160px); }
+.face-1 { transform: rotateY(0deg) translateZ(220px); }
+.face-2 { transform: rotateY(90deg) translateZ(220px); }
+.face-3 { transform: rotateY(180deg) translateZ(220px); }
+.face-4 { transform: rotateY(270deg) translateZ(220px); }
 
 .hero-3d-label {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: var(--teal-400);
 }
 
-.hero-3d-heading { font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; color: var(--text-000); }
+.hero-3d-heading { font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; color: var(--text-000); }
 
 @media (max-width: 1080px) {
-  .hero-3d-wrap { height: 380px; }
-  .hero-3d-stage { width: 260px; height: 240px; }
-  .face-1, .face-2, .face-3, .face-4 { padding: 20px 18px; }
-  .face-1 { transform: rotateY(0deg) translateZ(130px); }
-  .face-2 { transform: rotateY(90deg) translateZ(130px); }
-  .face-3 { transform: rotateY(180deg) translateZ(130px); }
-  .face-4 { transform: rotateY(270deg) translateZ(130px); }
+  .hero-3d-wrap { height: 440px; }
+  .hero-3d-stage { width: 320px; height: 300px; perspective: 1500px; }
+  .hero-3d-glow { width: 320px; height: 70px; }
+  .hero-3d-face { padding: 24px 22px; }
+  .hero-3d-heading { font-size: 1.05rem; }
+  .face-1 { transform: rotateY(0deg) translateZ(160px); }
+  .face-2 { transform: rotateY(90deg) translateZ(160px); }
+  .face-3 { transform: rotateY(180deg) translateZ(160px); }
+  .face-4 { transform: rotateY(270deg) translateZ(160px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

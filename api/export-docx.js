@@ -192,6 +192,107 @@ function table(headerCells, rows) {
   });
 }
 
+// Native-table bar chart: no ImageRun/canvas dependency, renders as real Word
+// table cells (a filled, colored cell sized by percentage width next to an
+// empty one), so it survives editing and prints reliably. This is the
+// "chart" primitive reused for both the KPI chart and the requirements
+// distribution chart below.
+function barTrack(pct) {
+  const filled = Math.max(2, Math.min(100, Math.round(pct)));
+  const rowChildren = [
+    new TableCell({
+      width: { size: filled, type: WidthType.PERCENTAGE },
+      shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
+      margins: { top: 60, bottom: 60, left: 0, right: 0 },
+      children: [new Paragraph({ children: [] })],
+    }),
+  ];
+  if (filled < 100) {
+    rowChildren.push(new TableCell({
+      width: { size: 100 - filled, type: WidthType.PERCENTAGE },
+      shading: { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT },
+      margins: { top: 60, bottom: 60, left: 0, right: 0 },
+      children: [new Paragraph({ children: [] })],
+    }));
+  }
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE },
+    },
+    rows: [new TableRow({ children: rowChildren })],
+  });
+}
+
+function barChartRow(label, pct, displayValue) {
+  return new TableRow({
+    children: [
+      new TableCell({
+        width: { size: 28, type: WidthType.PERCENTAGE },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 60, bottom: 60, left: 0, right: 100 },
+        children: [new Paragraph({ children: [new TextRun({ text: label, font: FONT, color: INK, size: 18 })] })],
+      }),
+      new TableCell({
+        width: { size: 57, type: WidthType.PERCENTAGE },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 60, bottom: 60, left: 0, right: 100 },
+        children: [barTrack(pct)],
+      }),
+      new TableCell({
+        width: { size: 15, type: WidthType.PERCENTAGE },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 60, bottom: 60, left: 0, right: 0 },
+        children: [new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          children: [new TextRun({ text: displayValue, font: FONT, bold: true, color: NAVY_DARK, size: 18 })],
+        })],
+      }),
+    ],
+  });
+}
+
+function barChart(rows) {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE },
+    },
+    rows: rows.map((r) => barChartRow(r.label, r.pct, r.displayValue)),
+  });
+}
+
+// KPI bar chart: only percentage-based targets, and only when there are
+// genuinely two or more to compare (same threshold used on the web preview,
+// so a single number never gets a misleading "chart").
+function buildKpiChart(kpis) {
+  const withPct = (kpis || [])
+    .map((k) => {
+      const m = String(k.target || '').match(/(\d+(?:\.\d+)?)\s*%/);
+      return m ? { label: k.indicator, pct: Math.min(100, parseFloat(m[1])), displayValue: `${m[1]}%` } : null;
+    })
+    .filter(Boolean);
+  return withPct.length >= 2 ? barChart(withPct) : null;
+}
+
+// Requirements distribution: relative bar per category, scaled against the
+// largest category so the chart reflects real proportion, not raw counts.
+function buildRequirementsChart(requirements) {
+  const cats = [
+    ['Regulatory', requirements?.regulatory], ['Governance', requirements?.governance],
+    ['Business', requirements?.business], ['Compliance', requirements?.compliance],
+  ]
+    .map(([label, items]) => ({ label, count: (items || []).length }))
+    .filter((c) => c.count > 0);
+  if (cats.length < 2) return null;
+  const max = Math.max(...cats.map((c) => c.count));
+  return barChart(cats.map((c) => ({ label: c.label, pct: (c.count / max) * 100, displayValue: String(c.count) })));
+}
+
 function buildHeader(title, docNumber, generatedDate) {
   return new Header({
     children: [
@@ -212,7 +313,7 @@ function buildHeader(title, docNumber, generatedDate) {
 }
 
 // Caps a list to `max` items so a turtle-diagram box never grows past a couple of lines.
-function capList(items, max = 3) {
+function capList(items, max = 4) {
   const list = uniq(items);
   if (list.length <= max) return list;
   return [...list.slice(0, max), `+ ${list.length - max} more`];
@@ -245,23 +346,24 @@ function turtleBox(headerText, items) {
       new TableRow({
         children: [new TableCell({
           shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
-          margins: { top: 40, bottom: 40, left: 80, right: 80 },
+          margins: { top: 60, bottom: 60, left: 90, right: 90 },
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: headerText, font: FONT, bold: true, color: 'FFFFFF', size: 14 })],
+            children: [new TextRun({ text: headerText, font: FONT, bold: true, color: 'FFFFFF', size: 16 })],
           })],
         })],
       }),
       new TableRow({
         children: [new TableCell({
-          margins: { top: 50, bottom: 50, left: 90, right: 90 },
+          shading: { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT },
+          margins: { top: 70, bottom: 70, left: 100, right: 100 },
           children: list.length
             ? list.map((t) => new Paragraph({
               bullet: { level: 0 },
-              children: [new TextRun({ text: t, font: FONT, color: INK, size: 15 })],
-              spacing: { after: 20 },
+              children: [new TextRun({ text: t, font: FONT, color: INK, size: 17 })],
+              spacing: { after: 30 },
             }))
-            : [new Paragraph({ children: [new TextRun({ text: '[To Be Confirmed]', font: FONT, color: MUTED, italics: true, size: 15 })] })],
+            : [new Paragraph({ children: [new TextRun({ text: '[To Be Confirmed]', font: FONT, color: MUTED, italics: true, size: 17 })] })],
         })],
       }),
     ],
@@ -284,26 +386,26 @@ function activityBox(title, description) {
       new TableRow({
         children: [new TableCell({
           shading: { type: ShadingType.SOLID, color: NAVY, fill: NAVY },
-          margins: { top: 40, bottom: 40, left: 80, right: 80 },
+          margins: { top: 60, bottom: 60, left: 90, right: 90 },
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: 'ACTIVITY', font: FONT, bold: true, color: 'FFFFFF', size: 14 })],
+            children: [new TextRun({ text: 'ACTIVITY', font: FONT, bold: true, color: 'FFFFFF', size: 16 })],
           })],
         })],
       }),
       new TableRow({
         children: [new TableCell({
           shading: { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT },
-          margins: { top: 70, bottom: 70, left: 120, right: 120 },
+          margins: { top: 90, bottom: 90, left: 140, right: 140 },
           children: [
             new Paragraph({
               alignment: AlignmentType.CENTER,
-              children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 18 })],
-              spacing: { after: 40 },
+              children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 21 })],
+              spacing: { after: 60 },
             }),
             new Paragraph({
               alignment: AlignmentType.CENTER,
-              children: [new TextRun({ text: description, font: FONT, color: INK, size: 15 })],
+              children: [new TextRun({ text: description, font: FONT, color: INK, size: 17 })],
             }),
           ],
         })],
@@ -413,15 +515,50 @@ function buildDoc(p) {
   const title = p.metadata?.title || 'Procedure';
   const docNumber = p.metadata?.documentNumber || '';
 
+  // --- Page 1: Cover ---
+  children.push(txt('', { size: 2 }));
+  children.push(txt('', { size: 2 }));
+  children.push(txt('', { size: 2 }));
   children.push(new Paragraph({
-    children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 44 })],
-    spacing: { after: 60 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 16, color: GOLD, space: 14 } },
+    spacing: { after: 280 },
+    children: [new TextRun({ text: 'CONTROLLED DOCUMENT', font: FONT, bold: true, color: GOLD, size: 18 })],
   }));
   children.push(new Paragraph({
-    children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: GOLD, bold: true, size: 20 })],
-    spacing: { after: 240 },
+    children: [new TextRun({ text: title, font: FONT, bold: true, color: NAVY_DARK, size: 60 })],
+    spacing: { after: 100 },
+  }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: NAVY, bold: true, size: 24 })],
+    spacing: { after: 700 },
+  }));
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Document Number  ', font: FONT, color: MUTED, size: 19 }),
+      new TextRun({ text: docNumber, font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
+    ],
+    spacing: { after: 80 },
+  }));
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Revision  ', font: FONT, color: MUTED, size: 19 }),
+      new TextRun({ text: p.metadata?.revisionNumber || '', font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
+    ],
+    spacing: { after: 80 },
+  }));
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Effective Date  ', font: FONT, color: MUTED, size: 19 }),
+      new TextRun({ text: p.metadata?.effectiveDate || '', font: FONT, bold: true, color: NAVY_DARK, size: 19 }),
+    ],
+    spacing: { after: 700 },
+  }));
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'CONFIDENTIAL - INTERNAL USE ONLY', font: FONT, bold: true, color: MUTED, size: 16 })],
   }));
 
+  // --- Page 2: Document Control ---
+  children.push(heading('Document Control', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
   children.push(sectionBar('Document Information'));
   children.push(table(
     ['Field', 'Value'],
@@ -443,16 +580,23 @@ function buildDoc(p) {
     ));
   }
 
+  // --- Page 3: Table of Contents ---
   const { ids, entries } = buildOutline(p);
 
-  children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
+  children.push(heading('Table of Contents', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
   for (const e of entries) children.push(tocEntry(e.label, e.id, { indent: e.indent }));
 
   children.push(bookmarkedHeading('1.0 Purpose', HeadingLevel.HEADING_1, ids.purpose, { pageBreakBefore: true }));
   children.push(txt(p.purpose || ''));
 
   children.push(bookmarkedHeading('2.0 Process Turtle Diagram', HeadingLevel.HEADING_1, ids.turtle));
+  children.push(txt('A structured view of this procedure showing what feeds into it, what it produces, and how it is executed and measured.'));
   children.push(buildTurtleDiagram(p));
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 140 },
+    children: [new TextRun({ text: `Figure 1. Process Turtle Diagram for ${title}`, font: FONT, italics: true, color: MUTED, size: 16 })],
+  }));
 
   children.push(bookmarkedHeading('3.0 Scope', HeadingLevel.HEADING_1, ids.scope));
   children.push(txt(p.scope?.summary || ''));
@@ -467,6 +611,12 @@ function buildDoc(p) {
   children.push(txt(p.applicability || ''));
 
   children.push(bookmarkedHeading('5.0 Requirements', HeadingLevel.HEADING_1, ids.requirements));
+  const requirementsChart = buildRequirementsChart(p.requirements);
+  if (requirementsChart) {
+    children.push(heading('Requirements Distribution', HeadingLevel.HEADING_3));
+    children.push(requirementsChart);
+    children.push(txt('', { size: 2 }));
+  }
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
@@ -500,8 +650,12 @@ function buildDoc(p) {
     if (sub.trigger) children.push(txt(`Trigger: ${sub.trigger}`));
     if (sub.steps?.length) {
       children.push(table(
-        ['Step', 'Action', 'Role', 'Input', 'Output', 'Control', 'Record'],
-        sub.steps.map((s) => [s.step, s.action, s.role, s.input || '', s.output || '', s.control || '', s.record || '']),
+        ['Step', 'Action', 'Role', 'Input', 'Output', 'Control', 'Record', 'Approval'],
+        sub.steps.map((s) => [
+          s.step,
+          s.action + (s.isDecision ? ` (Decision. Yes: ${s.decisionYes || ''}. No: ${s.decisionNo || ''})` : ''),
+          s.role, s.input || '', s.output || '', s.control || '', s.record || '', s.approval || '',
+        ]),
       ));
     }
     if (sub.exceptions) children.push(txt(`Exceptions/Escalations: ${sub.exceptions}`, { italics: true }));
@@ -509,6 +663,12 @@ function buildDoc(p) {
 
   if (p.kpis?.length) {
     children.push(bookmarkedHeading('9.0 Performance Indicators', HeadingLevel.HEADING_1, ids.kpis));
+    const kpiChart = buildKpiChart(p.kpis);
+    if (kpiChart) {
+      children.push(heading('Target Achievement Overview', HeadingLevel.HEADING_3));
+      children.push(kpiChart);
+      children.push(txt('', { size: 2 }));
+    }
     children.push(table(
       ['Indicator', 'Description', 'Responsible Role', 'Target'],
       p.kpis.map((k) => [k.indicator, k.description, k.role, k.target]),

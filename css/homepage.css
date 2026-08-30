@@ -82,28 +82,28 @@ body { overflow-x: hidden; }
 /* ---------- Hero: 3D rotating document ring ---------- */
 .hero-3d-wrap {
   position: relative;
-  height: 580px;
+  height: 520px;
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 2000px;
+  perspective: 1900px;
 }
 
 .hero-3d-glow {
   position: absolute;
-  bottom: 78px;
-  width: 500px;
-  height: 110px;
+  bottom: 66px;
+  width: 400px;
+  height: 90px;
   background: radial-gradient(ellipse, rgba(203, 167, 101, 0.4) 0%, rgba(124, 140, 245, 0.14) 45%, transparent 75%);
   filter: blur(10px);
 }
 
 .hero-3d-stage {
   position: relative;
-  width: 500px;
-  height: 450px;
-  margin-top: -48px;
-  perspective: 2000px;
+  width: 400px;
+  height: 360px;
+  margin-top: -36px;
+  perspective: 1800px;
   transition: transform 0.2s ease-out;
   will-change: transform;
 }
@@ -140,10 +140,10 @@ body { overflow-x: hidden; }
   gap: 20px;
 }
 
-.face-1 { transform: rotateY(0deg) translateZ(250px); }
-.face-2 { transform: rotateY(90deg) translateZ(250px); }
-.face-3 { transform: rotateY(180deg) translateZ(250px); }
-.face-4 { transform: rotateY(270deg) translateZ(250px); }
+.face-1 { transform: rotateY(0deg) translateZ(200px); }
+.face-2 { transform: rotateY(90deg) translateZ(200px); }
+.face-3 { transform: rotateY(180deg) translateZ(200px); }
+.face-4 { transform: rotateY(270deg) translateZ(200px); }
 
 .hero-3d-label {
   font-size: 0.8rem;
@@ -155,16 +155,19 @@ body { overflow-x: hidden; }
 
 .hero-3d-heading { font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; color: var(--text-000); }
 
+.hero-3d-body { font-size: 0.85rem; line-height: 1.5; color: var(--text-300); }
+
 @media (max-width: 1080px) {
-  .hero-3d-wrap { height: 460px; }
-  .hero-3d-stage { width: 350px; height: 320px; margin-top: -24px; perspective: 1600px; }
-  .hero-3d-glow { width: 350px; height: 80px; bottom: 48px; }
-  .hero-3d-face { padding: 26px 24px; }
-  .hero-3d-heading { font-size: 1.1rem; }
-  .face-1 { transform: rotateY(0deg) translateZ(175px); }
-  .face-2 { transform: rotateY(90deg) translateZ(175px); }
-  .face-3 { transform: rotateY(180deg) translateZ(175px); }
-  .face-4 { transform: rotateY(270deg) translateZ(175px); }
+  .hero-3d-wrap { height: 420px; }
+  .hero-3d-stage { width: 300px; height: 280px; margin-top: -18px; perspective: 1500px; }
+  .hero-3d-glow { width: 300px; height: 70px; bottom: 40px; }
+  .hero-3d-face { padding: 22px 20px; gap: 14px; }
+  .hero-3d-heading { font-size: 1rem; }
+  .hero-3d-body { font-size: 0.78rem; }
+  .face-1 { transform: rotateY(0deg) translateZ(150px); }
+  .face-2 { transform: rotateY(90deg) translateZ(150px); }
+  .face-3 { transform: rotateY(180deg) translateZ(150px); }
+  .face-4 { transform: rotateY(270deg) translateZ(150px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

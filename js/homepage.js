@@ -96,4 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.35 });
     io4.observe(turtleViz);
   }
+
+  // ---------------------------------------------------------------------
+  // Signature moment: build the mock document up as each stage scrolls
+  // into view, culminating in a "Complete" badge on the final stage.
+  // ---------------------------------------------------------------------
+  const wowStages = document.querySelectorAll('#wow-doc .wow-stage');
+  const wowComplete = document.getElementById('wow-complete');
+  if (wowStages.length) {
+    const io5 = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('built');
+        if (entry.target.classList.contains('wow-final') && wowComplete) {
+          wowComplete.textContent = 'Complete';
+          wowComplete.classList.add('done');
+        }
+        io5.unobserve(entry.target);
+      });
+    }, { threshold: 0.5, rootMargin: '0px 0px -10% 0px' });
+    wowStages.forEach((s) => io5.observe(s));
+  }
 });

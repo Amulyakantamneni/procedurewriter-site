@@ -325,6 +325,108 @@
   .turtle-node, .turtle-arrow { transition: none; }
 }
 
+/* ---------- Signature moment: watch a procedure build itself ---------- */
+.wow-doc {
+  max-width: 640px;
+  margin: 56px auto 0;
+  background: var(--bg-900);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
+}
+
+.wow-doc-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: var(--bg-800);
+  border-bottom: 1px solid var(--border-700);
+}
+.wow-doc-bar .filename { font-size: 0.78rem; color: var(--text-500); margin-left: 8px; }
+
+.wow-doc-complete {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-500);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-700);
+  transition: all 0.4s ease;
+}
+.wow-doc-complete.done { color: #0b1220; background: var(--teal-400); }
+
+.wow-doc-body { padding: 28px 26px; display: flex; flex-direction: column; gap: 26px; }
+
+.wow-stage {
+  opacity: 0.22;
+  transform: translateY(14px);
+  filter: blur(2px);
+  transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
+}
+.wow-stage.built { opacity: 1; transform: none; filter: none; }
+
+.wow-stage-label { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--teal-400); margin-bottom: 10px; }
+
+.wow-line-skeleton { height: 9px; border-radius: 5px; background: var(--bg-700); margin-bottom: 6px; }
+.wow-line-skeleton.w80 { width: 80%; }
+.wow-line-skeleton.w70 { width: 70%; }
+.wow-line-skeleton.w60 { width: 60%; }
+
+.wow-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.wow-chips span { padding: 6px 12px; border-radius: 999px; background: var(--bg-700); border: 1px solid var(--border-700); font-size: 0.76rem; color: var(--text-300); }
+
+.wow-steps { display: flex; gap: 8px; }
+.wow-steps span {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg-700); border: 1px solid var(--border-700);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 700; color: var(--text-300);
+}
+
+.wow-flow { display: flex; align-items: center; gap: 8px; }
+.wow-flow span { width: 44px; height: 24px; border-radius: 6px; background: var(--bg-700); border: 1px solid var(--border-700); position: relative; }
+.wow-flow span:not(:last-child)::after {
+  content: ''; position: absolute; right: -9px; top: 50%;
+  transform: translateY(-50%); width: 8px; height: 2px; background: var(--border-600);
+}
+
+.wow-turtle-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 220px; }
+.wow-turtle-mini span { height: 22px; border-radius: 4px; background: var(--bg-700); border: 1px solid var(--border-700); }
+.wow-turtle-mini span.center {
+  grid-column: 2; grid-row: 2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; color: var(--teal-400); background: var(--bg-800);
+}
+
+.wow-kpi-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.wow-kpi-badges span {
+  padding: 6px 12px; border-radius: 6px;
+  background: rgba(203, 167, 101, 0.12); border: 1px solid rgba(203, 167, 101, 0.3);
+  color: var(--teal-400); font-size: 0.8rem; font-weight: 700;
+}
+
+.wow-tab-row { display: flex; gap: 8px; }
+.wow-tab { padding: 8px 14px; border-radius: 6px 6px 0 0; background: var(--bg-700); border: 1px solid var(--border-700); border-bottom: none; font-size: 0.78rem; color: var(--text-300); }
+
+.wow-final {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding-top: 18px; border-top: 1px dashed var(--border-700);
+  color: var(--teal-400); font-weight: 700; font-size: 1rem;
+}
+.wow-final svg { width: 26px; height: 26px; }
+
+.wow-caption { text-align: center; margin-top: 32px; font-size: 1.05rem; color: var(--text-300); }
+.wow-caption a { margin-left: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wow-stage, .wow-doc-complete { transition: none; opacity: 1; transform: none; filter: none; }
+}
+
 /* Scroll-reveal primitive: JS toggles .in-view; CSS-only fallback for no-JS */
 .reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal-up.in-view { opacity: 1; transform: translateY(0); }

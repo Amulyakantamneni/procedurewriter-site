@@ -96,6 +96,7 @@ function buildOutline(p) {
     purpose: 'sec_purpose', turtle: 'sec_turtle', scope: 'sec_scope', applicability: 'sec_applicability',
     requirements: 'sec_requirements', definitions: 'sec_definitions', responsibilities: 'sec_responsibilities',
     procedure: 'sec_procedure', kpis: 'sec_kpis', records: 'sec_records', references: 'sec_references',
+    annexures: 'sec_annexures',
   };
   const entries = [
     { label: '1.0 Purpose', id: ids.purpose },
@@ -113,6 +114,12 @@ function buildOutline(p) {
   if (p.kpis?.length) entries.push({ label: '9.0 Performance Indicators', id: ids.kpis });
   if (p.records?.length) entries.push({ label: '10.0 Records', id: ids.records });
   entries.push({ label: '11.0 References', id: ids.references });
+  if (p.annexures?.length) {
+    entries.push({ label: 'Annexures', id: ids.annexures });
+    p.annexures.forEach((a, i) => {
+      entries.push({ label: `Annexure ${a.letter} - ${a.title}`, id: `sec_annex_${i}`, indent: true });
+    });
+  }
   return { ids, entries };
 }
 
@@ -518,6 +525,14 @@ function buildDoc(p) {
 
   children.push(bookmarkedHeading('11.0 References', HeadingLevel.HEADING_1, ids.references));
   children.push(...bullets(p.references));
+
+  if (p.annexures?.length) {
+    children.push(bookmarkedHeading('Annexures', HeadingLevel.HEADING_1, ids.annexures));
+    p.annexures.forEach((a, i) => {
+      children.push(bookmarkedHeading(`Annexure ${a.letter} - ${a.title}`, HeadingLevel.HEADING_2, `sec_annex_${i}`));
+      children.push(txt(a.content || ''));
+    });
+  }
 
   return new Document({
     features: { updateFields: true },

@@ -17,6 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
     'energy-utilities': 'Energy & Utilities',
     'legal-compliance': 'Legal & Compliance',
     'technology': 'Information Technology / Software',
+    'insurance': 'Insurance',
+    'pharmaceutical': 'Pharmaceutical & Life Sciences',
+    'construction': 'Construction',
+    'automotive': 'Automotive',
+    'food-beverage': 'Food & Beverage',
+    'logistics': 'Logistics & Supply Chain',
+    'retail': 'Retail & E-commerce',
+    'government': 'Government & Public Sector',
+    'education': 'Education',
+    'professional-services': 'Professional Services',
   };
   const MODE_LABELS = {
     'sop': 'SOP Creation',
@@ -523,6 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return [...bodyLines, ...edgeLines].join('\n');
   }
 
+  // Secondary, not the hero: rendered as its own collapsed-by-default section
+  // at the end of the document, after the user has seen the actual procedure.
   function renderQualityScore(q) {
     if (!q) return '';
     const bar = (label, val) => `
@@ -531,23 +543,25 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="bar-track"><div class="bar-fill" style="width:${Math.max(0, Math.min(100, val))}%"></div></div>
       </div>`;
     return `
-      <div class="doc-quality">
-        <div class="doc-quality-score">
-          <div class="num">${esc(q.overall)}</div>
-          <div class="label">Quality Score</div>
+      <details class="doc-analysis">
+        <summary>
+          <span class="doc-analysis-num">${esc(q.overall)}</span>
+          <span>Document Analysis <span class="doc-analysis-hint">click to expand readiness scoring and recommendations</span></span>
+        </summary>
+        <div class="doc-quality">
+          <div class="doc-quality-bars">
+            ${bar('Completeness', q.completeness)}
+            ${bar('Clarity', q.clarity)}
+            ${bar('Process Definition', q.processDefinition)}
+            ${bar('Risk & Controls', q.riskAndControls)}
+            ${bar('Compliance Coverage', q.complianceCoverage)}
+          </div>
+          <div class="doc-quality-recs">
+            <strong>Recommendations</strong>
+            ${list(q.recommendations)}
+          </div>
         </div>
-        <div class="doc-quality-bars">
-          ${bar('Completeness', q.completeness)}
-          ${bar('Clarity', q.clarity)}
-          ${bar('Process Definition', q.processDefinition)}
-          ${bar('Risk & Controls', q.riskAndControls)}
-          ${bar('Compliance Coverage', q.complianceCoverage)}
-        </div>
-        <div class="doc-quality-recs">
-          <strong>Recommendations</strong>
-          ${list(q.recommendations)}
-        </div>
-      </div>`;
+      </details>`;
   }
 
   // Headline counts as a stat-tile row (the correct form for "a handful of
@@ -608,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'records', label: '9.0 Records' },
       { id: 'references', label: '10.0 References' },
     ];
+    if (p.annexures?.length) sections.push({ id: 'annexures', label: 'Annexures' });
 
     el.sidebar.innerHTML = sections.map((s) => `<a href="#${s.id}">${esc(s.label)}</a>`).join('');
 
@@ -635,8 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
 
     el.content.innerHTML = `
-      ${renderQualityScore(p.qualityScore)}
-
       <div class="doc-section" id="metadata">
         <h2>${esc(p.metadata?.title || 'Procedure')}</h2>
         ${table(['Field', 'Value'], [
@@ -716,6 +729,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <h2>10.0 References</h2>
         ${list(p.references)}
       </div>
+
+      ${p.annexures?.length ? `
+      <div class="doc-section" id="annexures">
+        <h2>Annexures</h2>
+        ${p.annexures.map((a) => `
+          <div class="doc-annexure">
+            <h3>Annexure ${esc(a.letter)} - ${esc(a.title)}</h3>
+            <p>${esc(a.content)}</p>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${renderQualityScore(p.qualityScore)}
     `;
 
     if (window.mermaid) {

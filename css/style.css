@@ -1504,25 +1504,48 @@ header.site-nav.scrolled {
   overflow-x: auto;
 }
 
-.doc-quality {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 32px;
-  align-items: start;
+.doc-analysis {
   background: var(--bg-800);
   border: 1px solid var(--border-700);
   border-radius: var(--radius-md);
-  padding: 24px;
-  margin-bottom: 40px;
+  margin: 40px 0;
 }
 
-.doc-quality-score {
-  text-align: center;
-  min-width: 100px;
+.doc-analysis summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text-100);
+  list-style: none;
+}
+.doc-analysis summary::-webkit-details-marker { display: none; }
+
+.doc-analysis-num {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--teal-400);
+  background: var(--bg-700);
+  border-radius: 999px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.doc-quality-score .num { font-family: var(--font-head); font-size: 2.4rem; font-weight: 800; color: var(--teal-400); }
-.doc-quality-score .label { font-size: 0.75rem; color: var(--text-500); text-transform: uppercase; letter-spacing: 0.04em; }
+.doc-analysis-hint { display: block; font-size: 0.78rem; font-weight: 400; color: var(--text-500); margin-top: 2px; }
+
+.doc-quality {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 0 24px 24px;
+}
 
 .doc-quality-bars { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 24px; }
 
@@ -1530,8 +1553,11 @@ header.site-nav.scrolled {
 .doc-quality-bar .bar-track { height: 5px; border-radius: 3px; background: var(--bg-700); margin-top: 4px; overflow: hidden; }
 .doc-quality-bar .bar-fill { height: 100%; background: var(--indigo-500); }
 
-.doc-quality-recs { grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-500); }
+.doc-quality-recs { font-size: 0.85rem; color: var(--text-500); }
 .doc-quality-recs ul { margin: 8px 0 0 20px; }
+
+.doc-annexure { margin-bottom: 20px; }
+.doc-annexure h3 { color: var(--teal-400); margin-bottom: 6px; }
 
 /* ---------- Chart bar (single-hue magnitude) ---------- */
 .chart-bars {

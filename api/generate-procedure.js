@@ -20,7 +20,7 @@ This document needs to be usable as written, not returned full of brackets for s
 - Revision number: "1.0" for a new procedure.
 - Effective date: write "Effective upon approval" rather than a placeholder — that is a complete, correct value, not a gap.
 - Developer / Approver: use a role title inferred from context (e.g. "Operations Manager", "EHS Manager", "Compliance Officer"), not a placeholder. The organization will swap in a name later; a role is a real, complete answer.
-- Applicability: commit to a clear default scope (e.g. "Applies to all company facilities and personnel performing this activity" or "Applies to the [named] department"), inferred from the brief. If the brief mentions multiple possible sites or jurisdictions, state the default plainly and add one line noting that region-specific variants (e.g. state-level requirements like Cal/OSHA vs. federal OSHA) may need a local addendum — that's useful information, not an unresolved question.
+- Applicability: commit to a clear default scope (e.g. "Applies to all company facilities and personnel performing this activity" or "Applies to the [named] department"), inferred from the brief. If the brief mentions multiple possible sites or jurisdictions, state the default plainly and add one line noting that region-specific variants (e.g. state-level requirements like Cal/OSHA vs. federal OSHA) may need a local addendum — that's useful information, not an unresolved question. If the brief names an actual organization, company, facility, city, department, business unit, or customer group anywhere (goal, audience, region, current process, or additional context), weave that specific detail into Applicability (e.g. "This procedure applies to the Quality and Manufacturing functions at the Dallas facility of Acme Manufacturing Inc."). Never invent an organization name, facility, or location that wasn't stated or clearly implied — when none was given, keep the generic default scope statement instead of guessing one.
 - Performance indicator targets: always give a specific number. Use standard, defensible benchmarks when the brief doesn't specify one: 100% for safety/compliance-critical items (PPE compliance, training completion before unsupervised work), 95%+ for closure/completion-rate items, and reasonable industry-typical cycle times otherwise. Never leave target blank.
 - References: never return an empty list. Always include the internal documents this procedure obviously connects to even if unnamed in the brief (e.g. equipment/machine manuals, the relevant internal program document such as a Lockout/Tagout Program or Emergency Action Plan, related SOPs) — these are standard operational connections any real version of this document would have, not fabrication. Also name specific, well-established, stable regulations or standards you have high confidence about given the industry, procedure type, and region (e.g. "OSHA 29 CFR 1910.147 – The Control of Hazardous Energy (Lockout/Tagout)," "HIPAA," "GDPR"). Only name a specific citation you're genuinely confident is accurate and stable — for anything less certain, name the general regulatory area instead of guessing a specific clause number.
 
@@ -37,6 +37,7 @@ This document needs to be usable as written, not returned full of brackets for s
 - Only include a requirements subsection (regulatory/governance/business/compliance) if it's actually relevant — do not pad every category out.
 - Only name a compliance standard (ISO 9001, ISO 27001, SOC 2, HIPAA, GDPR, PCI DSS, GMP, HACCP, OSHA, FDA, etc.) if plausibly relevant to the described process and region — do not list standards reflexively.
 - Score qualityScore honestly based on how complete and specific the brief actually was — a thin brief should score lower on completeness, not be padded with invented specifics to inflate the score. recommendations should name what's actually missing from the brief itself (not "add a document number," since that's now handled by default above).
+- Annexures: only include one when it adds real, non-duplicate value beyond what's already in the numbered sections — e.g. a one-page checklist version of the steps for floor/field use, a risk notes summary, a forms/templates list. Return an empty annexures array when nothing genuinely useful applies; do not force an annexure onto a document that doesn't need one, and never duplicate a full section verbatim as an "annexure."
 
 # MODE EMPHASIS
 
@@ -207,6 +208,19 @@ const TOOL_SCHEMA = {
         },
       },
       references: { type: 'array', items: { type: 'string' } },
+      annexures: {
+        type: 'array',
+        description: 'Optional supporting annexures (process flow summary, RACI extract, checklist, risk notes). Return an empty array when none are genuinely useful for this document, do not force one.',
+        items: {
+          type: 'object',
+          properties: {
+            letter: { type: 'string', description: 'A, B, C, ...' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+          },
+          required: ['letter', 'title', 'content'],
+        },
+      },
       qualityScore: {
         type: 'object',
         properties: {
@@ -226,7 +240,7 @@ const TOOL_SCHEMA = {
     },
     required: [
       'metadata', 'revisionHistory', 'purpose', 'scope', 'applicability', 'requirements',
-      'definitions', 'responsibilities', 'raci', 'procedure', 'kpis', 'records', 'references', 'qualityScore',
+      'definitions', 'responsibilities', 'raci', 'procedure', 'kpis', 'records', 'references', 'annexures', 'qualityScore',
     ],
   },
 };
@@ -303,7 +317,7 @@ export default async function handler(req, res) {
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 16000,
+      max_tokens: 18000,
       system: SYSTEM_PROMPT,
       tools: [TOOL_SCHEMA],
       tool_choice: { type: 'tool', name: 'generate_procedure' },

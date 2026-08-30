@@ -5,12 +5,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
-  /* Surfaces — warm charcoal, not blue-black */
-  --bg-950: #0a0a0d;
-  --bg-900: #101013;
-  --bg-800: #17171c;
-  --bg-700: #1f1f26;
-  --bg-600: #2b2b34;
+  /* Surfaces — deep navy/black */
+  --bg-950: #05070d;
+  --bg-900: #0a0e1a;
+  --bg-800: #121828;
+  --bg-700: #1a2138;
+  --bg-600: #242c48;
 
   /* Text */
   --text-000: #f7f7f8;
@@ -19,15 +19,17 @@
   --text-500: #6c6d78;
 
   /* Borders */
-  --border-700: #202024;
-  --border-600: #2c2c33;
+  --border-700: #1c2233;
+  --border-600: #2a3350;
 
-  /* Brand accents — single confident blue, muted gold for highlights */
-  --indigo-400: #7c8cf5;
-  --indigo-500: #5b6ef0;
-  --indigo-600: #4750d6;
-  --teal-400: #7dd3fc;
-  --teal-500: #2dd4bf;
+  /* Brand accents — electric blue primary CTA, subtle cyan highlights,
+     violet reserved for gradients only (never a solid fill). */
+  --indigo-400: #3b82f6;
+  --indigo-500: #2563eb;
+  --indigo-600: #1d4ed8;
+  --teal-400: #67e8f9;
+  --teal-500: #22d3ee;
+  --violet: #8b5cf6;
 
   /* Type */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -124,10 +126,10 @@ section { padding: 96px 0; }
 .btn-primary {
   background: var(--indigo-500);
   color: #fff;
-  box-shadow: 0 8px 20px -8px rgba(91, 110, 240, 0.5);
+  box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.5);
 }
 
-.btn-primary:hover { background: var(--indigo-600); transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(91, 110, 240, 0.65); }
+.btn-primary:hover { background: var(--indigo-600); transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(37, 99, 235, 0.65); }
 
 .btn-secondary {
   background: transparent;
@@ -135,7 +137,7 @@ section { padding: 96px 0; }
   border-color: var(--border-600);
 }
 
-.btn-secondary:hover { border-color: var(--indigo-400); background: rgba(91, 110, 240, 0.08); }
+.btn-secondary:hover { border-color: var(--indigo-400); background: rgba(37, 99, 235, 0.08); }
 
 .btn-block { width: 100%; justify-content: center; }
 
@@ -173,7 +175,7 @@ header.site-nav {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--indigo-500), var(--teal-500));
+  background: linear-gradient(135deg, var(--indigo-500), var(--violet));
   display: grid;
   place-items: center;
 }
@@ -285,8 +287,8 @@ header.site-nav {
   overflow: hidden;
   padding: 168px 0 100px;
   background:
-    radial-gradient(55% 55% at 88% 0%, rgba(91, 110, 240, 0.16) 0%, transparent 62%),
-    radial-gradient(40% 40% at 4% 30%, rgba(45, 212, 191, 0.07) 0%, transparent 60%);
+    radial-gradient(55% 55% at 88% 0%, rgba(37, 99, 235, 0.16) 0%, transparent 62%),
+    radial-gradient(40% 40% at 4% 30%, rgba(103, 232, 249, 0.07) 0%, transparent 60%);
 }
 
 /* Animated background layer: soft drifting color blobs, a huge faint brand
@@ -377,7 +379,7 @@ header.site-nav {
 }
 
 .hero h1 .accent, .hero-display .accent {
-  background: linear-gradient(135deg, var(--indigo-400), var(--teal-400));
+  background: linear-gradient(135deg, var(--indigo-400), var(--violet));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -490,7 +492,7 @@ header.site-nav {
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(45, 212, 191, 0.14);
+  background: rgba(103, 232, 249, 0.14);
   color: var(--teal-400);
 }
 
@@ -850,7 +852,7 @@ header.site-nav {
 
 /* ---------- CTA band ---------- */
 .cta-band {
-  background: linear-gradient(135deg, rgba(91, 110, 240, 0.12), rgba(45, 212, 191, 0.06));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(103, 232, 249, 0.06));
   border: 1px solid var(--border-700);
   border-radius: var(--radius-lg);
   padding: 56px;
@@ -865,7 +867,7 @@ header.site-nav {
 .page-hero {
   padding: 156px 0 64px;
   border-bottom: 1px solid var(--border-700);
-  background: radial-gradient(55% 55% at 88% 0%, rgba(91, 110, 240, 0.14) 0%, transparent 62%);
+  background: radial-gradient(55% 55% at 88% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 62%);
 }
 
 .page-hero h1 { font-size: clamp(2rem, 3.6vw, 2.75rem); max-width: 720px; margin-bottom: 18px; }
@@ -1173,8 +1175,8 @@ header.site-nav.scrolled {
   }
 
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.35); }
-    50% { box-shadow: 0 0 0 6px rgba(45, 212, 191, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(103, 232, 249, 0.35); }
+    50% { box-shadow: 0 0 0 6px rgba(103, 232, 249, 0); }
   }
 
   .doc-badge { animation: pulse-glow 2.6s ease-in-out infinite; }
@@ -1335,7 +1337,7 @@ header.site-nav.scrolled {
   color: var(--text-500);
 }
 
-.wp-step.active { color: var(--text-000); border-color: var(--indigo-500); background: rgba(91, 110, 240, 0.12); }
+.wp-step.active { color: var(--text-000); border-color: var(--indigo-500); background: rgba(37, 99, 235, 0.12); }
 .wp-step.done { color: var(--teal-400); border-color: var(--border-600); }
 
 /* ---------- Resume banner ---------- */
@@ -1371,8 +1373,8 @@ header.site-nav.scrolled {
   gap: 12px;
   padding: 8px 8px 8px 16px;
   border-radius: 999px;
-  background: rgba(45, 212, 191, 0.12);
-  border: 1px solid rgba(45, 212, 191, 0.3);
+  background: rgba(103, 232, 249, 0.12);
+  border: 1px solid rgba(103, 232, 249, 0.3);
   color: var(--teal-400);
   font-weight: 600;
   font-size: 0.85rem;
@@ -1438,7 +1440,7 @@ header.site-nav.scrolled {
 .chip:hover { border-color: var(--indigo-400); color: var(--text-000); }
 
 .chip.selected {
-  background: rgba(91, 110, 240, 0.16);
+  background: rgba(37, 99, 235, 0.16);
   border-color: var(--indigo-500);
   color: var(--text-000);
 }
@@ -1529,7 +1531,7 @@ header.site-nav.scrolled {
 
 .generating-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--indigo-500), var(--teal-400));
+  background: linear-gradient(90deg, var(--indigo-500), var(--violet));
   width: 0%;
   transition: width 0.4s ease;
 }
@@ -1627,7 +1629,7 @@ header.site-nav.scrolled {
 }
 
 .doc-flowline span.chip {
-  background: rgba(91, 110, 240, 0.12);
+  background: rgba(37, 99, 235, 0.12);
   padding: 6px 14px;
   border-radius: 999px;
 }
@@ -1837,7 +1839,7 @@ header.site-nav.scrolled {
   .chart-bars, .stat-tile, .chart-bar-track { background: #f3f3f3; border-color: #ccc; }
   .chart-bar-label, .chart-bar-value, .stat-label { color: #000 !important; }
   .stat-value { color: #000; }
-  .chart-bar-fill { background: #4750d6; }
+  .chart-bar-fill { background: #1d4ed8; }
 
   /* Checklist mode: hide everything except the checklist container */
   body.checklist-mode > *:not(#checklist-print) { display: none !important; }

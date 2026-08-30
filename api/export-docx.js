@@ -281,18 +281,6 @@ function buildKpiChart(kpis) {
 
 // Requirements distribution: relative bar per category, scaled against the
 // largest category so the chart reflects real proportion, not raw counts.
-function buildRequirementsChart(requirements) {
-  const cats = [
-    ['Regulatory', requirements?.regulatory], ['Governance', requirements?.governance],
-    ['Business', requirements?.business], ['Compliance', requirements?.compliance],
-  ]
-    .map(([label, items]) => ({ label, count: (items || []).length }))
-    .filter((c) => c.count > 0);
-  if (cats.length < 2) return null;
-  const max = Math.max(...cats.map((c) => c.count));
-  return barChart(cats.map((c) => ({ label: c.label, pct: (c.count / max) * 100, displayValue: String(c.count) })));
-}
-
 function buildHeader(title, docNumber, generatedDate) {
   return new Header({
     children: [
@@ -429,6 +417,99 @@ function arrowConnector(symbol) {
     alignment: AlignmentType.CENTER,
     children: [new TextRun({ text: symbol, font: FONT, bold: true, color: NAVY, size: 24 })],
   });
+}
+
+// A single step box in the process flowchart: navy for a normal action step,
+// gold for a decision point so it reads as visually distinct without needing
+// an actual diamond shape.
+function flowStepBox(step, isDecision) {
+  const headerColor = isDecision ? GOLD : NAVY;
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 4, color: headerColor },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: headerColor },
+      left: { style: BorderStyle.SINGLE, size: 4, color: headerColor },
+      right: { style: BorderStyle.SINGLE, size: 4, color: headerColor },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: headerColor },
+    },
+    rows: [
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: headerColor, fill: headerColor },
+          margins: { top: 40, bottom: 40, left: 90, right: 90 },
+          children: [new Paragraph({
+            children: [new TextRun({
+              text: `${isDecision ? 'DECISION' : 'STEP'} ${step.step}${step.role ? ` - ${step.role}` : ''}`,
+              font: FONT, bold: true, color: 'FFFFFF', size: 15,
+            })],
+          })],
+        })],
+      }),
+      new TableRow({
+        children: [new TableCell({
+          shading: { type: ShadingType.SOLID, color: ROW_ALT, fill: ROW_ALT },
+          margins: { top: 60, bottom: 60, left: 90, right: 90 },
+          children: [new Paragraph({
+            children: [new TextRun({ text: step.action || '', font: FONT, color: INK, size: 17 })],
+          })],
+        })],
+      }),
+    ],
+  });
+}
+
+// Two side-by-side outcome boxes for a decision step's Yes/No paths.
+function flowDecisionBranches(yesLabel, noLabel) {
+  const branch = (label, color) => new TableCell({
+    width: { size: 50, type: WidthType.PERCENTAGE },
+    shading: { type: ShadingType.SOLID, color: 'FFFFFF', fill: 'FFFFFF' },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 3, color: BORDER },
+      bottom: { style: BorderStyle.SINGLE, size: 3, color: BORDER },
+      left: { style: BorderStyle.SINGLE, size: 3, color: BORDER },
+      right: { style: BorderStyle.SINGLE, size: 3, color: BORDER },
+    },
+    margins: { top: 50, bottom: 50, left: 80, right: 80 },
+    children: [new Paragraph({
+      children: [
+        new TextRun({ text: color === 'YES' ? 'YES  ' : 'NO  ', font: FONT, bold: true, color: NAVY, size: 15 }),
+        new TextRun({ text: label || 'Not specified', font: FONT, color: INK, size: 15 }),
+      ],
+    })],
+  });
+  return new Table({
+    width: { size: 92, type: WidthType.PERCENTAGE },
+    alignment: AlignmentType.CENTER,
+    borders: {
+      top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE },
+    },
+    rows: [new TableRow({ children: [branch(yesLabel, 'YES'), branch(noLabel, 'NO')] })],
+  });
+}
+
+// Process flowchart: a vertical sequence of connected step boxes, with
+// decision steps calling out their Yes/No paths directly beneath. Capped to
+// a reasonable number of steps so the flowchart stays a quick-scan visual;
+// the full detail always follows in the step table underneath it.
+function buildProcessFlowchart(sub) {
+  const steps = (sub.steps || []).slice(0, 10);
+  const children = [];
+  steps.forEach((step, i) => {
+    children.push(flowStepBox(step, Boolean(step.isDecision)));
+    if (step.isDecision) {
+      children.push(txt('', { size: 2 }));
+      children.push(flowDecisionBranches(step.decisionYes, step.decisionNo));
+      children.push(txt('', { size: 2 }));
+    }
+    if (i < steps.length - 1) children.push(arrowConnector('↓'));
+  });
+  if ((sub.steps || []).length > steps.length) {
+    children.push(txt(`+ ${sub.steps.length - steps.length} more step(s), see the table below for the full sequence.`, { italics: true, color: MUTED, size: 17 }));
+  }
+  return children;
 }
 
 // Turtle diagram: Input -> Activity -> Output flow flanked by With What, With Who,
@@ -580,10 +661,12 @@ function buildDoc(p) {
     ));
   }
 
-  // --- Page 3: Table of Contents ---
+  // --- Table of Contents: flows naturally after Document Control (no forced
+  // break here) so a short document never leaves a near-empty page behind. ---
   const { ids, entries } = buildOutline(p);
 
-  children.push(heading('Table of Contents', HeadingLevel.HEADING_1, { pageBreakBefore: true }));
+  children.push(txt('', { size: 2 }));
+  children.push(heading('Table of Contents', HeadingLevel.HEADING_1));
   for (const e of entries) children.push(tocEntry(e.label, e.id, { indent: e.indent }));
 
   children.push(bookmarkedHeading('1.0 Purpose', HeadingLevel.HEADING_1, ids.purpose, { pageBreakBefore: true }));
@@ -611,12 +694,6 @@ function buildDoc(p) {
   children.push(txt(p.applicability || ''));
 
   children.push(bookmarkedHeading('5.0 Requirements', HeadingLevel.HEADING_1, ids.requirements));
-  const requirementsChart = buildRequirementsChart(p.requirements);
-  if (requirementsChart) {
-    children.push(heading('Requirements Distribution', HeadingLevel.HEADING_3));
-    children.push(requirementsChart);
-    children.push(txt('', { size: 2 }));
-  }
   for (const [label, key] of [['Regulatory', 'regulatory'], ['Governance', 'governance'], ['Business', 'business'], ['Compliance', 'compliance']]) {
     const items = p.requirements?.[key];
     if (items?.length) {
@@ -649,6 +726,14 @@ function buildDoc(p) {
     if (sub.objective) children.push(txt(`Objective: ${sub.objective}`));
     if (sub.trigger) children.push(txt(`Trigger: ${sub.trigger}`));
     if (sub.steps?.length) {
+      children.push(heading('Process Flow', HeadingLevel.HEADING_3));
+      children.push(...buildProcessFlowchart(sub));
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 100, after: 240 },
+        children: [new TextRun({ text: `Figure. Process Flow for ${sub.id} ${sub.title}`, font: FONT, italics: true, color: MUTED, size: 16 })],
+      }));
+      children.push(heading('Step Detail', HeadingLevel.HEADING_3));
       children.push(table(
         ['Step', 'Action', 'Role', 'Input', 'Output', 'Control', 'Record', 'Approval'],
         sub.steps.map((s) => [
@@ -665,7 +750,7 @@ function buildDoc(p) {
     children.push(bookmarkedHeading('9.0 Performance Indicators', HeadingLevel.HEADING_1, ids.kpis));
     const kpiChart = buildKpiChart(p.kpis);
     if (kpiChart) {
-      children.push(heading('Target Achievement Overview', HeadingLevel.HEADING_3));
+      children.push(heading('Performance Targets', HeadingLevel.HEADING_3));
       children.push(kpiChart);
       children.push(txt('', { size: 2 }));
     }

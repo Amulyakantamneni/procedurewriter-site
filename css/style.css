@@ -281,26 +281,102 @@ header.site-nav {
 
 /* ---------- Hero ---------- */
 .hero {
+  position: relative;
+  overflow: hidden;
   padding: 168px 0 100px;
   background:
     radial-gradient(55% 55% at 88% 0%, rgba(91, 110, 240, 0.16) 0%, transparent 62%),
     radial-gradient(40% 40% at 4% 30%, rgba(203, 167, 101, 0.07) 0%, transparent 60%);
 }
 
+/* Animated background layer: soft drifting color blobs, a huge faint brand
+   watermark, and a subtle dot grid, all beneath the content (z-index 0) and
+   never interactive (aria-hidden, pointer-events: none). */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  animation: heroBlobFloat 20s ease-in-out infinite;
+}
+
+.hero-blob-1 {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  right: -100px;
+  background: radial-gradient(circle, var(--indigo-500), transparent 70%);
+}
+
+.hero-blob-2 {
+  width: 420px;
+  height: 420px;
+  bottom: -140px;
+  left: 6%;
+  background: radial-gradient(circle, var(--teal-400), transparent 70%);
+  animation-delay: -10s;
+}
+
+@keyframes heroBlobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(26px, -22px) scale(1.08); }
+}
+
+.hero-mark {
+  position: absolute;
+  top: 50%;
+  left: -6%;
+  width: 620px;
+  height: 620px;
+  color: var(--text-000);
+  opacity: 0.035;
+  transform: translateY(-50%);
+  animation: heroMarkSpin 90s linear infinite;
+}
+
+.hero-mark svg { width: 100%; height: 100%; }
+
+@keyframes heroMarkSpin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse 70% 60% at 70% 20%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 20%, #000 0%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob, .hero-mark { animation: none; }
+}
+
 .hero-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 64px;
   align-items: center;
 }
 
-.hero h1 {
-  font-size: clamp(2.4rem, 4.8vw, 3.9rem);
+.hero h1, .hero-display {
+  font-size: clamp(2.6rem, 5.4vw, 4.4rem);
   letter-spacing: -0.03em;
   margin-bottom: 22px;
 }
 
-.hero h1 .accent {
+.hero h1 .accent, .hero-display .accent {
   background: linear-gradient(135deg, var(--indigo-400), var(--teal-400));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -328,8 +404,25 @@ header.site-nav {
 
 .hero-meta svg { width: 16px; height: 16px; color: var(--teal-400); flex-shrink: 0; }
 
-/* Doc preview panel */
+/* Doc preview panel, with a stacked-card depth effect behind it */
+.doc-panel-wrap { position: relative; }
+
+.doc-panel-stack { position: absolute; inset: 0; pointer-events: none; }
+
+.doc-panel-ghost {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-700);
+  background: var(--bg-800);
+}
+
+.doc-panel-ghost.g1 { transform: translate(14px, 16px) rotate(2deg); opacity: 0.55; z-index: 0; }
+.doc-panel-ghost.g2 { transform: translate(28px, 30px) rotate(4deg); opacity: 0.28; z-index: -1; }
+
 .doc-panel {
+  position: relative;
+  z-index: 1;
   background: var(--bg-900);
   border: 1px solid var(--border-700);
   border-radius: var(--radius-lg);
@@ -337,6 +430,7 @@ header.site-nav {
   overflow: hidden;
   transition: transform 0.15s ease-out;
   will-change: transform;
+  transform-style: preserve-3d;
 }
 
 .doc-panel-bar {

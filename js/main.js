@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = docPanel.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
-      docPanel.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg)`;
+      docPanel.style.transform = `perspective(900px) rotateY(${x * 9}deg) rotateX(${-y * 9}deg) translateZ(10px)`;
     });
     docPanel.addEventListener('mouseleave', () => {
       docPanel.style.transform = '';

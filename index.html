@@ -48,10 +48,18 @@
 </header>
 
 <section class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+    </div>
+    <div class="hero-grid-overlay"></div>
+  </div>
   <div class="container hero-grid">
     <div>
       <p class="eyebrow">AI-Assisted Documentation</p>
-      <h1>Write procedures your team will <span class="accent">actually follow</span></h1>
+      <h1 class="hero-display">Procedures your team will <span class="accent">actually follow</span></h1>
       <p class="lead">We turn tribal knowledge, messy notes, and compliance requirements into clear Standard Operating Procedures, drafted with AI and refined by people who read the regulation.</p>
       <div class="hero-actions">
         <a href="generate.html" class="btn btn-primary">Create a Procedure</a>
@@ -65,6 +73,10 @@
     </div>
 
     <div class="doc-panel-wrap">
+      <div class="doc-panel-stack" aria-hidden="true">
+        <div class="doc-panel-ghost g1"></div>
+        <div class="doc-panel-ghost g2"></div>
+      </div>
       <div class="doc-panel">
         <div class="doc-panel-bar">
           <span class="doc-dot r"></span><span class="doc-dot y"></span><span class="doc-dot g"></span>

@@ -21,6 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  // Mobile sticky CTA: mirrors the nav's own "Get Started" link (href, label,
+  // language) so it works correctly on every page and every translation
+  // without hardcoding paths or copy. Hidden on the generator itself and
+  // above the mobile breakpoint via CSS.
+  const navCta = document.querySelector('.nav-cta .btn-primary');
+  if (navCta && !document.body.classList.contains('pg-generate')) {
+    const bar = document.createElement('div');
+    bar.className = 'mobile-sticky-cta';
+    const link = document.createElement('a');
+    link.href = navCta.getAttribute('href');
+    link.className = 'btn btn-primary';
+    link.textContent = navCta.textContent;
+    bar.appendChild(link);
+    document.body.appendChild(bar);
+  }
+
   // Scroll-triggered reveal, with a per-item stagger inside each grid/row
   const revealEls = document.querySelectorAll(
     '.card, .step, .industry-card, .service-row, .faq-item, .value-grid > *, .cta-band, .photo-band, .section-head, .pull-quote, .mosaic-item, .contact-grid > div:first-child, .contact-form, .contact-photo'

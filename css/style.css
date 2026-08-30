@@ -210,6 +210,21 @@ header.site-nav {
 
 .nav-toggle span { width: 22px; height: 2px; background: var(--text-100); border-radius: 2px; }
 
+/* ---------- Mobile sticky CTA (injected by main.js; shown only under 700px) ---------- */
+.mobile-sticky-cta {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-900);
+  border-top: 1px solid var(--border-700);
+}
+
+.mobile-sticky-cta .btn { display: block; width: 100%; text-align: center; }
+
 /* ---------- Language switcher ---------- */
 .lang-switch { position: relative; }
 
@@ -974,6 +989,8 @@ footer.site-footer {
   .image-mosaic { grid-template-columns: repeat(2, 1fr); }
   .cta-band { padding: 36px 24px; }
   .footer-bottom { flex-direction: column; align-items: flex-start; }
+  body:not(.pg-generate) { padding-bottom: 76px; }
+  .mobile-sticky-cta { display: block; }
 
   header.site-nav.open .nav-links {
     display: flex;

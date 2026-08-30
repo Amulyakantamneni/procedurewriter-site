@@ -427,6 +427,72 @@
   .wow-stage, .wow-doc-complete { transition: none; opacity: 1; transform: none; filter: none; }
 }
 
+/* ---------- Interactive industry showcase ---------- */
+.industry-showcase {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  margin-top: 48px;
+  align-items: stretch;
+}
+
+.industry-tabs { display: flex; flex-direction: column; gap: 4px; }
+
+.industry-tab {
+  text-align: left;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  border-left: 2px solid var(--border-700);
+  color: var(--text-500);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.industry-tab:hover, .industry-tab:focus-visible { color: var(--text-100); }
+
+.industry-tab.active {
+  color: var(--text-000);
+  border-left-color: var(--teal-400);
+  background: var(--bg-800);
+}
+
+.industry-preview {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 360px;
+  border: 1px solid var(--border-700);
+}
+
+.industry-preview img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+
+.industry-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+  background: linear-gradient(0deg, rgba(10, 10, 13, 0.92) 0%, rgba(10, 10, 13, 0.55) 55%, transparent 100%);
+}
+
+.industry-preview-overlay h3 { color: var(--text-000); font-size: 1.6rem; margin-bottom: 12px; }
+
+.industry-preview-overlay ul { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; }
+.industry-preview-overlay li { color: var(--text-100); font-size: 0.92rem; }
+.industry-preview-overlay li::before { content: '+ '; color: var(--teal-400); font-weight: 700; }
+
+@media (max-width: 800px) {
+  .industry-showcase { grid-template-columns: 1fr; }
+  .industry-tabs { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .industry-tab { border-left: none; border-bottom: 2px solid var(--border-700); padding: 8px 4px; }
+  .industry-tab.active { border-bottom-color: var(--teal-400); background: transparent; }
+}
+
 /* Scroll-reveal primitive: JS toggles .in-view; CSS-only fallback for no-JS */
 .reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal-up.in-view { opacity: 1; transform: translateY(0); }

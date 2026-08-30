@@ -269,37 +269,39 @@
   </div>
 </section>
 
-<section>
+<section class="env-panel">
   <div class="container">
-    <div class="section-head center">
-      <p class="eyebrow">Industries</p>
+    <div class="section-head center reveal-up">
+      <p class="tech-label">Industries</p>
       <h2>Built for regulated, high-stakes operations</h2>
+      <p>Every industry documents differently. Pick one to see the kind of procedures teams actually generate.</p>
     </div>
-    <div class="card-grid">
-      <a class="card" href="generate.html?industry=healthcare">
-        <div class="card-photo"><img src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=720&h=400&q=80" alt="Healthcare team reviewing a protocol" loading="lazy" width="720" height="400"></div>
-        <div class="card-icon" style="color:var(--indigo-400)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-4.5-8-11a8 8 0 0116 0c0 6.5-8 11-8 11z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <h3>Healthcare</h3>
-        <p>Clinical SOPs, HIPAA-aligned intake, and care protocols.</p>
-        <span class="card-link">Start a draft <span class="arrow">→</span></span>
-      </a>
-      <a class="card" href="generate.html?industry=manufacturing">
-        <div class="card-photo"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=720&h=400&q=80" alt="Manufacturing floor worker at a production line" loading="lazy" width="720" height="400"></div>
-        <div class="card-icon" style="color:var(--indigo-400)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
-        <h3>Manufacturing</h3>
-        <p>Production workflows, quality control, and safety procedures.</p>
-        <span class="card-link">Start a draft <span class="arrow">→</span></span>
-      </a>
-      <a class="card" href="generate.html?industry=financial-services">
-        <div class="card-photo"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=720&h=400&q=80" alt="Financial services team in a meeting" loading="lazy" width="720" height="400"></div>
-        <div class="card-icon" style="color:var(--indigo-400)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
-        <h3>Financial Services</h3>
-        <p>Regulatory compliance, audit trails, and risk documentation.</p>
-        <span class="card-link">Start a draft <span class="arrow">→</span></span>
+    <div class="industry-showcase reveal-up" id="industry-showcase">
+      <div class="industry-tabs" role="tablist" aria-label="Industries">
+        <button type="button" class="industry-tab active" data-industry="healthcare" role="tab" aria-selected="true">Healthcare</button>
+        <button type="button" class="industry-tab" data-industry="manufacturing" role="tab" aria-selected="false">Manufacturing</button>
+        <button type="button" class="industry-tab" data-industry="financial-services" role="tab" aria-selected="false">Finance &amp; Banking</button>
+        <button type="button" class="industry-tab" data-industry="technology" role="tab" aria-selected="false">IT &amp; Software</button>
+        <button type="button" class="industry-tab" data-industry="energy-utilities" role="tab" aria-selected="false">Energy &amp; Utilities</button>
+        <button type="button" class="industry-tab" data-industry="construction" role="tab" aria-selected="false">Construction</button>
+        <button type="button" class="industry-tab" data-industry="logistics" role="tab" aria-selected="false">Logistics &amp; Supply Chain</button>
+        <button type="button" class="industry-tab" data-industry="government" role="tab" aria-selected="false">Government</button>
+      </div>
+      <a class="industry-preview" id="industry-preview" href="generate.html?industry=healthcare">
+        <img id="industry-preview-img" src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=820&h=440&q=80" alt="" loading="lazy" width="820" height="440">
+        <div class="industry-preview-overlay">
+          <h3 id="industry-preview-name">Healthcare</h3>
+          <ul id="industry-preview-list">
+            <li>Patient Intake &amp; Registration</li>
+            <li>Infection Control Protocol</li>
+            <li>HIPAA Compliance Procedure</li>
+          </ul>
+          <span class="card-link accent">Start a draft <span class="arrow">→</span></span>
+        </div>
       </a>
     </div>
     <div style="text-align:center; margin-top:36px;">
-      <a href="industries.html" class="btn btn-secondary">See all industries</a>
+      <a href="industries.html" class="btn btn-secondary">See all 16 industries</a>
     </div>
   </div>
 </section>

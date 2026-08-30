@@ -117,4 +117,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.5, rootMargin: '0px 0px -10% 0px' });
     wowStages.forEach((s) => io5.observe(s));
   }
+
+  // ---------------------------------------------------------------------
+  // Industry showcase: swap the preview panel on hover/click/focus
+  // ---------------------------------------------------------------------
+  const INDUSTRY_DATA = {
+    'healthcare': {
+      name: 'Healthcare', img: 'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Patient Intake & Registration', 'Infection Control Protocol', 'HIPAA Compliance Procedure'],
+    },
+    'manufacturing': {
+      name: 'Manufacturing', img: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Lockout/Tagout Safety', 'Quality Inspection', 'Equipment Maintenance'],
+    },
+    'financial-services': {
+      name: 'Finance & Banking', img: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['KYC & Customer Onboarding', 'AML Transaction Monitoring', 'Regulatory Reporting'],
+    },
+    'technology': {
+      name: 'IT & Software', img: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Incident Response', 'Access Control & Permissions', 'Release / Deployment Process'],
+    },
+    'energy-utilities': {
+      name: 'Energy & Utilities', img: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Field Safety Inspection', 'Outage Response', 'Environmental Compliance Reporting'],
+    },
+    'construction': {
+      name: 'Construction', img: 'https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Site Safety Inspection', 'Permit & Compliance Tracking', 'Subcontractor Onboarding'],
+    },
+    'logistics': {
+      name: 'Logistics & Supply Chain', img: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Shipment & Receiving Inspection', 'Inventory Management', 'Vendor Onboarding'],
+    },
+    'government': {
+      name: 'Government & Public Sector', img: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=820&h=440&q=80',
+      examples: ['Records Management', 'Procurement Process Documentation', 'Public Records Request Handling'],
+    },
+  };
+
+  const showcase = document.getElementById('industry-showcase');
+  if (showcase) {
+    const tabs = showcase.querySelectorAll('.industry-tab');
+    const preview = document.getElementById('industry-preview');
+    const previewImg = document.getElementById('industry-preview-img');
+    const previewName = document.getElementById('industry-preview-name');
+    const previewList = document.getElementById('industry-preview-list');
+
+    function setIndustry(key) {
+      const data = INDUSTRY_DATA[key];
+      if (!data) return;
+      tabs.forEach((t) => {
+        const active = t.dataset.industry === key;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      previewImg.src = data.img;
+      previewImg.alt = `${data.name} team at work`;
+      previewName.textContent = data.name;
+      previewList.innerHTML = data.examples.map((e) => `<li>${e}</li>`).join('');
+      preview.href = `generate.html?industry=${key}`;
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('mouseenter', () => setIndustry(tab.dataset.industry));
+      tab.addEventListener('focus', () => setIndustry(tab.dataset.industry));
+      tab.addEventListener('click', (e) => { e.preventDefault(); setIndustry(tab.dataset.industry); });
+    });
+  }
 });

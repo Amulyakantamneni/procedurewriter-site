@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Homepage-only styles. Loaded by index.html alone so every other page's
+   CSS payload is unaffected. Builds on the shared tokens/components in
+   style.css (colors, .btn, .container, .section-head, etc.) rather than
+   redefining them.
+   ========================================================================== */
+
+/* ---------- Hero: word-by-word headline reveal ---------- */
+.hero-line { display: block; }
+.hw {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.4em);
+  filter: blur(6px);
+}
+.hw.accent {
+  background: linear-gradient(135deg, var(--indigo-400), var(--teal-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+/* JS adds .revealed per word with a stagger; CSS-only fallback reveals
+   everything immediately if JS never runs, so the headline is never stuck
+   invisible. */
+.hw.revealed { animation: hwIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes hwIn {
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw { opacity: 1; transform: none; filter: none; animation: none; }
+}
+.no-js .hw { opacity: 1; transform: none; filter: none; }
+
+/* ---------- Section rhythm: technical labels + alternating environments ---------- */
+.tech-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal-400);
+  margin-bottom: 14px;
+}
+.tech-label::before { content: ''; width: 18px; height: 1px; background: var(--teal-400); }
+
+.env-dark { background: var(--bg-950); }
+.env-panel { background: var(--bg-900); border-top: 1px solid var(--border-700); border-bottom: 1px solid var(--border-700); }
+
+.env-blueprint {
+  position: relative;
+  background: var(--bg-950);
+  background-image:
+    linear-gradient(rgba(124, 140, 245, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 140, 245, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.env-blueprint::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, transparent 0%, var(--bg-950) 85%);
+  pointer-events: none;
+}
+.env-blueprint > .container { position: relative; z-index: 1; }
+
+/* ---------- Chaos to Clarity ---------- */
+.chaos-clarity {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-top: 56px;
+}
+
+.chaos-side {
+  position: relative;
+  min-height: 320px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-content: center;
+}
+
+.chaos-chip {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg-800);
+  border: 1px solid var(--border-700);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-300);
+  box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.5);
+  animation: chipFloat 7s ease-in-out infinite;
+}
+.chaos-chip.c1 { transform: rotate(-3deg); animation-delay: 0s; }
+.chaos-chip.c2 { transform: rotate(2deg); animation-delay: -1.2s; }
+.chaos-chip.c3 { transform: rotate(-1.5deg); animation-delay: -2.4s; }
+.chaos-chip.c4 { transform: rotate(3deg); animation-delay: -3.6s; }
+.chaos-chip.c5 { transform: rotate(-2.5deg); animation-delay: -4.8s; }
+.chaos-chip.c6 { transform: rotate(1.5deg); animation-delay: -6s; }
+
+@keyframes chipFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--r, 0deg)); }
+}
+
+.clarity-arrow {
+  color: var(--teal-400);
+  width: 32px;
+  height: 32px;
+}
+.clarity-arrow svg { width: 100%; height: 100%; }
+
+.clarity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clarity-list li {
+  padding: 14px 18px;
+  background: var(--bg-800);
+  border: 1px solid var(--border-700);
+  border-left: 3px solid var(--teal-400);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  color: var(--text-100);
+  font-size: 0.9rem;
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.clarity-list.in-view li { opacity: 1; transform: translateX(0); }
+.clarity-list.in-view li:nth-child(1) { transition-delay: 0.05s; }
+.clarity-list.in-view li:nth-child(2) { transition-delay: 0.12s; }
+.clarity-list.in-view li:nth-child(3) { transition-delay: 0.19s; }
+.clarity-list.in-view li:nth-child(4) { transition-delay: 0.26s; }
+.clarity-list.in-view li:nth-child(5) { transition-delay: 0.33s; }
+.clarity-list.in-view li:nth-child(6) { transition-delay: 0.4s; }
+.clarity-list.in-view li:nth-child(7) { transition-delay: 0.47s; }
+.clarity-list.in-view li:nth-child(8) { transition-delay: 0.54s; }
+.clarity-list.in-view li:nth-child(9) { transition-delay: 0.61s; }
+
+@media (max-width: 900px) {
+  .chaos-clarity { grid-template-columns: 1fr; }
+  .clarity-arrow { transform: rotate(90deg); justify-self: center; }
+  .chaos-side { min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chaos-chip { animation: none; }
+  .clarity-list li { transition: none; opacity: 1; transform: none; }
+}
+
+/* Scroll-reveal primitive: JS toggles .in-view; CSS-only fallback for no-JS */
+.reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-up.in-view { opacity: 1; transform: translateY(0); }
+.no-js .reveal-up { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up { opacity: 1; transform: none; transition: none; }
+}

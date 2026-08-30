@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProcedureWriter.ai | AI-Assisted SOP & Procedure Writing</title>
 <meta name="description" content="ProcedureWriter.ai helps regulated teams draft, standardize, and maintain clear Standard Operating Procedures that are AI-drafted and expert-reviewed.">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/homepage.css">
 <link rel="alternate" hreflang="en" href="https://procedurewriter.ai/index.html">
 <link rel="alternate" hreflang="es" href="https://procedurewriter.ai/es/index.html">
 <link rel="alternate" hreflang="fr" href="https://procedurewriter.ai/fr/index.html">
@@ -58,8 +59,12 @@
   </div>
   <div class="container hero-grid">
     <div>
-      <p class="eyebrow">AI-Assisted Documentation</p>
-      <h1 class="hero-display">Procedures your team will <span class="accent">actually follow</span></h1>
+      <p class="eyebrow">The operating system for professional procedures</p>
+      <h1 class="hero-display" id="hero-headline">
+        <span class="hero-line"><span class="hw">Turn</span> <span class="hw">the</span> <span class="hw">way</span> <span class="hw">you</span> <span class="hw">work</span></span>
+        <span class="hero-line"><span class="hw">into</span> <span class="hw accent">a</span> <span class="hw accent">procedure</span></span>
+        <span class="hero-line"><span class="hw">people</span> <span class="hw">actually</span> <span class="hw">follow.</span></span>
+      </h1>
       <p class="lead">We turn tribal knowledge, messy notes, and compliance requirements into clear Standard Operating Procedures, drafted with AI and refined by people who read the regulation.</p>
       <div class="hero-actions">
         <a href="generate.html" class="btn btn-primary">Create a Procedure</a>
@@ -114,6 +119,42 @@
     <span aria-hidden="true">Healthcare</span><span aria-hidden="true">Manufacturing</span><span aria-hidden="true">Financial Services</span><span aria-hidden="true">Energy &amp; Utilities</span><span aria-hidden="true">Legal &amp; Compliance</span><span aria-hidden="true">Technology</span>
   </div>
 </div>
+
+<section class="env-blueprint">
+  <div class="container">
+    <div class="section-head center reveal-up">
+      <p class="tech-label">The Problem</p>
+      <h2>Your process already exists.<br>We give it structure.</h2>
+      <p>Most of what your team knows how to do lives in a Slack thread, a spreadsheet nobody's touched since last year, or one person's head. None of that survives them leaving, and none of it holds up in an audit.</p>
+    </div>
+    <div class="chaos-clarity reveal-up">
+      <div class="chaos-side" aria-hidden="true">
+        <span class="chaos-chip c1">Email thread, 40 replies deep</span>
+        <span class="chaos-chip c2">Spreadsheet_v14_FINAL.xlsx</span>
+        <span class="chaos-chip c3">PDF, last touched 2019</span>
+        <span class="chaos-chip c4">"Ask Priya, she knows"</span>
+        <span class="chaos-chip c5">Sticky note on a monitor</span>
+        <span class="chaos-chip c6">Regulation excerpt, unfiled</span>
+      </div>
+      <div class="clarity-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+      <div class="clarity-side">
+        <ol class="clarity-list" id="clarity-list">
+          <li>Purpose</li>
+          <li>Scope</li>
+          <li>Applicability</li>
+          <li>Requirements</li>
+          <li>Responsibilities</li>
+          <li>Procedure</li>
+          <li>Performance Indicators</li>
+          <li>Records</li>
+          <li>References</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="services">
   <div class="container">
@@ -322,6 +363,9 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="js/main.js"></script>
+<script src="js/homepage.js"></script>
 </body>
 </html>

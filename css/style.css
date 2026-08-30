@@ -1355,23 +1355,85 @@ header.site-nav.scrolled {
 
 /* ---------- Generating ---------- */
 .generating {
-  max-width: 480px;
-  margin: 40px auto;
-  text-align: center;
+  max-width: 560px;
+  margin: 48px auto;
   color: var(--text-300);
 }
 
-.generating-spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  border: 3px solid var(--border-600);
-  border-top-color: var(--indigo-500);
-  animation: gen-spin 0.9s linear infinite;
+.generating h2 {
+  text-align: center;
+  font-family: var(--font-head);
+  margin-bottom: 28px;
 }
 
-@keyframes gen-spin { to { transform: rotate(360deg); } }
+.generating-stages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.generating-stages li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.92rem;
+  color: var(--text-500);
+  transition: color 0.3s;
+}
+
+.generating-stages .stage-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border-600);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.generating-stages li.done { color: var(--text-300); }
+.generating-stages li.done .stage-icon { background: var(--teal-400); border-color: var(--teal-400); color: #0b1220; }
+
+.generating-stages li.active { color: var(--text-100); font-weight: 600; }
+.generating-stages li.active .stage-icon { border-color: var(--indigo-500); animation: gen-pulse 1.2s ease-in-out infinite; }
+
+@keyframes gen-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
+}
+
+.generating-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-700);
+  overflow: hidden;
+}
+
+.generating-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--indigo-500), var(--teal-400));
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.generating-eta {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-500);
+  margin-top: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generating-stages li.active .stage-icon { animation: none; }
+  .generating-progress-fill { transition: none; }
+}
 
 /* ---------- Document workspace ---------- */
 .doc-workspace {

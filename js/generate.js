@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     generate: document.getElementById('w-generate'),
     status: document.getElementById('w-status'),
     generating: document.getElementById('generating'),
-    generatingMessage: document.getElementById('generating-message'),
     workspace: document.getElementById('doc-workspace'),
     sidebar: document.getElementById('doc-sidebar'),
     content: document.getElementById('doc-content'),
@@ -393,14 +392,72 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------------
   // Generate
   // ---------------------------------------------------------------------
-  const PROGRESS_MESSAGES = [
-    'Understanding your process…',
-    'Identifying applicable requirements…',
-    'Building the procedure structure…',
-    'Working out responsibilities and RACI…',
-    'Checking compliance considerations…',
-    'Finalizing the document…',
+  // Stage labels with a rough relative time weight (seconds), used only to pace
+  // an honest, approximate progress indicator: it never claims completion before
+  // the real response lands, and holds on the final stage instead of lying with
+  // a countdown that hits zero while the request is still in flight.
+  const GENERATION_STAGES = [
+    { label: 'Understanding your requirements', weight: 2 },
+    { label: 'Identifying process structure', weight: 2 },
+    { label: 'Building scope and applicability', weight: 2 },
+    { label: 'Reviewing relevant requirements', weight: 3 },
+    { label: 'Creating procedure steps', weight: 5 },
+    { label: 'Building process diagrams', weight: 3 },
+    { label: 'Creating turtle diagram', weight: 2 },
+    { label: 'Preparing annexures', weight: 2 },
+    { label: 'Final document formatting', weight: 3 },
   ];
+  const GENERATION_ESTIMATE_S = GENERATION_STAGES.reduce((sum, s) => sum + s.weight, 0);
+
+  function startGenerationProgress() {
+    const stagesEl = document.getElementById('generating-stages');
+    const fillEl = document.getElementById('generating-progress-fill');
+    const etaEl = document.getElementById('generating-eta');
+    stagesEl.innerHTML = GENERATION_STAGES.map((s) =>
+      `<li><span class="stage-icon"></span><span>${esc(s.label)}</span></li>`).join('');
+    const items = [...stagesEl.children];
+
+    const startedAt = Date.now();
+    let thresholds = [];
+    let acc = 0;
+    for (const s of GENERATION_STAGES) {
+      acc += s.weight;
+      thresholds.push(acc);
+    }
+
+    function tick() {
+      const elapsed = (Date.now() - startedAt) / 1000;
+      let activeIdx = thresholds.findIndex((t) => elapsed < t);
+      if (activeIdx === -1) activeIdx = items.length - 1;
+
+      items.forEach((li, i) => {
+        li.classList.toggle('done', i < activeIdx);
+        li.classList.toggle('active', i === activeIdx);
+      });
+
+      const pct = Math.min(96, Math.round((elapsed / GENERATION_ESTIMATE_S) * 100));
+      fillEl.style.width = `${pct}%`;
+
+      const remaining = Math.round(GENERATION_ESTIMATE_S - elapsed);
+      etaEl.textContent = remaining > 2
+        ? `Approximately ${remaining} seconds remaining`
+        : 'Almost there…';
+    }
+
+    tick();
+    const timer = setInterval(tick, 400);
+    return {
+      finish() {
+        clearInterval(timer);
+        items.forEach((li) => { li.classList.add('done'); li.classList.remove('active'); });
+        fillEl.style.width = '100%';
+        etaEl.textContent = 'Done';
+      },
+      stop() {
+        clearInterval(timer);
+      },
+    };
+  }
 
   el.generate.addEventListener('click', async () => {
     readCurrentStepIntoState();
@@ -416,12 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.generating.hidden = false;
     setPhase('generate');
 
-    let msgIndex = 0;
-    el.generatingMessage.textContent = PROGRESS_MESSAGES[0];
-    const msgTimer = setInterval(() => {
-      msgIndex = (msgIndex + 1) % PROGRESS_MESSAGES.length;
-      el.generatingMessage.textContent = PROGRESS_MESSAGES[msgIndex];
-    }, 2600);
+    const progress = startGenerationProgress();
 
     try {
       const headers = { 'Content-Type': 'application/json' };
@@ -447,14 +499,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) throw new Error(data.error || 'The generator failed. Please try again.');
 
       lastProcedure = data.procedure;
-      clearInterval(msgTimer);
+      progress.finish();
       clearDraft();
       renderDocument(lastProcedure);
       el.generating.hidden = true;
       el.workspace.hidden = false;
       setPhase('review');
     } catch (e) {
-      clearInterval(msgTimer);
+      progress.stop();
       el.generating.hidden = true;
       el.wizard.hidden = false;
       el.status.textContent = e.message || 'Something went wrong. Please try again.';

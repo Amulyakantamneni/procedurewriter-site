@@ -632,10 +632,6 @@ function buildDoc(p) {
   }));
   children.push(new Paragraph({
     children: [new TextRun({ text: 'Standard Operating Procedure', font: FONT, color: NAVY, bold: true, size: 22 })],
-    spacing: { after: 60 },
-  }));
-  children.push(new Paragraph({
-    children: [new TextRun({ text: 'CONFIDENTIAL - INTERNAL USE ONLY', font: FONT, bold: true, color: MUTED, size: 15 })],
     spacing: { after: 280 },
   }));
 

@@ -152,6 +152,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------------
+  // Before/after drag comparison slider (mouse, touch, and keyboard)
+  // ---------------------------------------------------------------------
+  const baSlider = document.getElementById('ba-slider');
+  const baHandle = document.getElementById('ba-handle');
+  const baBefore = document.getElementById('ba-before');
+  if (baSlider && baHandle && baBefore) {
+    const setPosition = (pct) => {
+      const clamped = Math.min(100, Math.max(0, pct));
+      baHandle.style.left = `${clamped}%`;
+      baBefore.style.clipPath = `inset(0 ${100 - clamped}% 0 0)`;
+      baHandle.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    };
+
+    const pctFromClientX = (clientX) => {
+      const rect = baSlider.getBoundingClientRect();
+      return ((clientX - rect.left) / rect.width) * 100;
+    };
+
+    let dragging = false;
+    const onMove = (clientX) => setPosition(pctFromClientX(clientX));
+
+    baHandle.addEventListener('mousedown', () => { dragging = true; });
+    window.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX); });
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    baHandle.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (dragging && e.touches[0]) onMove(e.touches[0].clientX);
+    }, { passive: true });
+    window.addEventListener('touchend', () => { dragging = false; });
+
+    baSlider.addEventListener('click', (e) => {
+      if (e.target === baHandle || baHandle.contains(e.target)) return;
+      onMove(e.clientX);
+    });
+
+    baHandle.addEventListener('keydown', (e) => {
+      const current = parseFloat(baHandle.style.left) || 50;
+      if (e.key === 'ArrowLeft') { setPosition(current - 5); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { setPosition(current + 5); e.preventDefault(); }
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // Compliance network: draw all connecting lines in once scrolled into view
   // ---------------------------------------------------------------------
   const complianceViz = document.getElementById('compliance-viz');

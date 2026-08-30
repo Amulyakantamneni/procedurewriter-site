@@ -406,6 +406,68 @@ body { overflow-x: hidden; }
   .process-flow-line-fill, .process-flow-dot, .process-flow-body { transition: none; }
 }
 
+/* ---------- Before / after drag comparison ---------- */
+.ba-slider {
+  position: relative;
+  max-width: 720px;
+  height: 380px;
+  margin: 56px auto 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-700);
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
+  user-select: none;
+}
+
+.ba-panel { position: absolute; inset: 0; padding: 32px; display: flex; flex-direction: column; }
+.ba-after { background: var(--bg-900); }
+.ba-before { background: var(--bg-800); clip-path: inset(0 50% 0 0); }
+
+.ba-panel-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--teal-400); margin-bottom: 22px; }
+
+.ba-doc-mini { display: flex; flex-direction: column; gap: 14px; }
+.ba-doc-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; color: var(--text-000); margin-bottom: 4px; }
+.ba-doc-h { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-500); }
+
+.ba-messy { position: relative; display: flex; flex-wrap: wrap; gap: 16px; align-content: flex-start; padding-top: 24px; }
+.ba-messy .chaos-chip { animation: none; }
+
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: var(--teal-400);
+  cursor: ew-resize;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.ba-handle-grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--teal-400);
+  color: #0b1220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -8px rgba(203, 167, 101, 0.6);
+}
+.ba-handle-grip svg { width: 20px; height: 20px; }
+
+.ba-handle:focus-visible .ba-handle-grip { outline: 2px solid var(--text-000); outline-offset: 2px; }
+
+@media (max-width: 700px) {
+  .ba-slider { height: 320px; }
+  .ba-panel { padding: 20px; }
+}
+
 /* ---------- Signature moment: watch a procedure build itself ---------- */
 .wow-doc {
   max-width: 640px;

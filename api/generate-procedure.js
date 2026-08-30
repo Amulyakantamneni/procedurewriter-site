@@ -37,6 +37,7 @@ This document needs to be usable as written, not returned full of brackets for s
 - Only include a requirements subsection (regulatory/governance/business/compliance) if it's actually relevant — do not pad every category out.
 - Only name a compliance standard (ISO 9001, ISO 27001, SOC 2, HIPAA, GDPR, PCI DSS, GMP, HACCP, OSHA, FDA, etc.) if plausibly relevant to the described process and region — do not list standards reflexively.
 - Score qualityScore honestly based on how complete and specific the brief actually was — a thin brief should score lower on completeness, not be padded with invented specifics to inflate the score. recommendations should name what's actually missing from the brief itself (not "add a document number," since that's now handled by default above).
+- Never use an em dash or en dash anywhere in generated text (titles, content, lists). Use a period, comma, colon, or the word "to" for ranges instead (e.g. "9 AM to 5 PM," not "9 AM–5 PM").
 - Annexures: only include one when it adds real, non-duplicate value beyond what's already in the numbered sections — e.g. a one-page checklist version of the steps for floor/field use, a risk notes summary, a forms/templates list. Return an empty annexures array when nothing genuinely useful applies; do not force an annexure onto a document that doesn't need one, and never duplicate a full section verbatim as an "annexure."
 
 # MODE EMPHASIS
